@@ -2,12 +2,31 @@ import streamlit as st
 import streamlit.components.v1 as components
 from groq import Groq
 
-st.set_page_config(page_title="AI Assistant", page_icon="🤖", layout="centered")
+# পৃষ্ঠার কনফিগারেশন এবং লেআউট সাজানো
+st.set_page_config(page_title="AI Companion - Saheb", page_icon="✨", layout="centered")
 
-st.title("🤖 AI অ্যাসিস্ট্যান্ট")
-st.caption("আপনার যেকোনো কথা বা প্রশ্ন লিখুন, বুদ্ধিমান AI সাথে সাথে সবকিছুর উত্তর দেবে।")
+# কাস্টম স্টাইল ও আকর্ষণীয় ডিজাইন
+st.markdown(
+    """
+    <style>
+    .main {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+    .stChatInput {
+        position: fixed;
+        bottom: 20px;
+        background: white;
+        z-index: 999;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
-# Adsterra বিজ্ঞাপনের বাটন (Safe String Format)
+st.title("✨ বুদ্ধিদীপ্ত এআই অ্যাসিস্ট্যান্ট")
+st.caption("আপনার প্রতিটি কথার বুদ্ধিমান ও মিষ্টি উত্তর দিতে আমি প্রস্তুত।")
+
+# Adsterra বিজ্ঞাপনের আকর্ষণীয় বাটন
 ad_link = "https://www.profitableratecpmnetwork.com/h7ssyv17p?key=eb8a14de90b0395f65ebf374d7d4ca71"
 button_html = """
     <div style="text-align: center; margin: 15px 0;">
@@ -17,10 +36,11 @@ button_html = """
                 color: white;
                 padding: 12px 24px;
                 border: none;
-                border-radius: 8px;
+                border-radius: 25px;
                 font-size: 16px;
                 font-weight: bold;
                 cursor: pointer;
+                box-shadow: 0 4px 15px rgba(255, 75, 75, 0.3);
             ">
                 🎁 Support Us / Check Offer
             </button>
@@ -29,46 +49,49 @@ button_html = """
 """
 st.markdown(button_html.format(ad_link), unsafe_allow_html=True)
 
-# আপনার ফিক্সড Groq API Key
-GROQ_API_KEY = "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"
+# আপনার প্রদান করা নতুন Groq API Key
+GROQ_API_KEY = "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"
 client = Groq(api_key=GROQ_API_KEY)
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# চ্যাট মেসেজ এবং স্পষ্ট ভয়েস বাটন
+# চ্যাট ইতিহাস এবং মিষ্টি ভয়েস বাটন রেন্ডার করা
 for idx, message in enumerate(st.session_state.messages):
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
         if message["role"] == "assistant":
             clean_voice = message["content"].replace('"', '').replace("'", "").replace("\n", " ")
-            if st.button("🔊 মুখে শুনুন", key=f"speak_{idx}"):
+            if st.button("🔊 মিষ্টি সুরে শুনুন", key=f"speak_{idx}"):
                 js_code = """
                     <script>
                         if ('speechSynthesis' in window) {
                             window.speechSynthesis.cancel();
                             let msg = new SpeechSynthesisUtterance("{}");
                             msg.lang = 'bn-IN';
-                            msg.rate = 1.0;
+                            msg.rate = 0.92;  // ধীর ও স্পষ্ট উচ্চারণ
+                            msg.pitch = 1.15; // মিষ্টি ও সুরেলা কণ্ঠস্বর
                             window.speechSynthesis.speak(msg);
                         }
                     </script>
                 """
                 components.html(js_code.format(clean_voice), height=0)
 
-# প্রশ্ন করার বক্স
-if prompt := st.chat_input("যেকোনো প্রশ্ন বা কথা এখানে লিখুন..."):
+# ব্যবহারকারীর প্রশ্ন ইনপুট নেওয়ার বক্স
+if prompt := st.chat_input("আপনার যেকোনো প্রশ্ন বা কথা এখানে লিখুন..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        with st.spinner("ভেবে উত্তর তৈরি করছি..."):
+        with st.spinner("গভীরভাবে ভেবে সুন্দর উত্তর তৈরি করছি..."):
             try:
+                # এআই-এর বুদ্ধিমত্তা, ব্যক্তিত্ব ও মিষ্টি স্বভাবের প্রম্পট
                 system_prompt = (
-                    "You are a universally intelligent, polite, and helpful AI assistant. "
-                    "You know your creator is Saheb. Greet Saheb with respect and warmth. "
-                    "Answer any question thoroughly, accurately, and naturally in Bengali on all topics."
+                    "You are an exceptionally intelligent, wise, sweet, and warm AI companion. "
+                    "You know your creator is Saheb. Always greet Saheb with profound respect, affection, and warmth. "
+                    "Provide deep, accurate, thoughtful, and natural responses in Bengali to any topic or question asked, "
+                    "empowering the user with wisdom and clarity."
                 )
                 chat_completion = client.chat.completions.create(
                     messages=[
