@@ -1,110 +1,153 @@
 import streamlit as st
 
-# পেজ কনফিগারেশন
-st.set_page_config(page_title="ViralHook AI", page_icon="⚡", layout="centered")
+st.set_page_config(page_title="ViralHook AI", layout="centered", initial_sidebar_state="collapsed")
 
-# মডার্ন স্টাইলিং ও কাস্টম সার্চ বার সিএসএস
+# জেমিনাই-স্টাইল ক্লিন লাইট/ডার্ক থিম এবং ফ্লোটিং ইনপুট বার সিএসএস
 st.markdown("""
-    <style>
-    /* ব্যাকগ্রাউন্ড ও টেক্সট স্টাইল */
-    .stApp {
-        background-color: #0e1117;
-        color: #ffffff;
+<style>
+    /* পুরো পেজের মার্জিন ও প্যাডিং ঠিক করা */
+    .block-container {
+        padding-top: 1rem !important;
+        padding-bottom: 6rem !important;
+        max-width: 650px !important;
     }
-    /* হেডার ও হুক স্টাইল */
-    .header-box {
-        text-align: center;
-        padding: 20px 0;
+    header {visibility: hidden;}
+    footer {visibility: hidden;}
+
+    /* টপ হেডার বার */
+    .top-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0 20px 0;
+        border-bottom: 1px solid rgba(128,128,128,0.15);
+        margin-bottom: 25px;
     }
-    .main-title {
-        font-size: 2.2rem;
-        font-weight: 700;
-        background: linear-gradient(90deg, #ff4b4b, #ff8533);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        margin-bottom: 5px;
+    .model-title {
+        font-size: 1.15rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 6px;
     }
-    .sub-title {
-        color: #9aa0a6;
-        font-size: 0.95rem;
-    }
-    /* কুইক অ্যাকশন হুক বাটন */
-    .hook-pill {
+    .model-dot {
+        width: 8px;
+        height: 8px;
+        background-color: #1a73e8;
+        border-radius: 50%;
         display: inline-block;
-        background: #1f2937;
-        color: #e5e7eb;
-        padding: 8px 14px;
-        border-radius: 20px;
-        font-size: 0.85rem;
-        margin: 4px;
-        border: 1px solid #374151;
     }
-    /* চ্যাট ইনপুট ডিজাইন */
+    .icon-btn {
+        font-size: 1.2rem;
+        cursor: pointer;
+        opacity: 0.8;
+    }
+
+    /* ইউজার মেসেজ বাবল (ডানপাশে গোল বাবল) */
+    .user-bubble-container {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 20px;
+    }
+    .user-bubble {
+        background-color: #f0f4f9;
+        color: #1f1f1f;
+        padding: 12px 20px;
+        border-radius: 22px;
+        max-width: 80%;
+        font-size: 0.98rem;
+        line-height: 1.5;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    @media (prefers-color-scheme: dark) {
+        .user-bubble {
+            background-color: #282a2c;
+            color: #e3e3e3;
+        }
+    }
+
+    /* এআই অ্যাসিস্ট্যান্টের মেসেজ (স্বাভাবিক টেক্সট) */
+    .bot-response-container {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 25px;
+    }
+    .bot-sparkle {
+        font-size: 1.1rem;
+        margin-top: 2px;
+    }
+    .bot-text {
+        font-size: 1rem;
+        line-height: 1.6;
+        flex: 1;
+    }
+
+    /* নিচের জেমিনাই স্টাইল সার্চ বার কাস্টমাইজেশন */
     div[data-testid="stChatInput"] {
-        border-radius: 30px !important;
+        border-radius: 35px !important;
+        box-shadow: 0 3px 12px rgba(0,0,0,0.08) !important;
+        border: 1px solid rgba(128,128,128,0.2) !important;
+        padding-left: 10px !important;
     }
-    </style>
+    div[data-testid="stChatInput"] textarea {
+        font-size: 0.98rem !important;
+    }
+</style>
 """, unsafe_allow_html=True)
 
-# শীর্ষভাগ (Header)
-st.markdown("""
-<div class="header-box">
-    <div class="main-title">⚡ ViralHook AI</div>
-    <div class="sub-title">আকর্ষণীয় ভাইরাল হুক, ক্যাপশন ও স্ক্রিপ্ট তৈরির পার্সোনাল অ্যাসিস্ট্যান্ট</div>
-</div>
-""", unsafe_allow_html=True)
+# টপ বার (Top Bar)
+col_left, col_mid, col_right = st.columns([1, 6, 1])
+with col_left:
+    st.markdown('<div class="icon-btn">☰</div>', unsafe_allow_html=True)
+with col_mid:
+    st.markdown('<div class="model-title">ViralHook Flash <span class="model-dot"></span></div>', unsafe_allow_html=True)
+with col_right:
+    if st.button("✏️", help="New Chat"):
+        st.session_state.messages = []
+        st.rerun()
 
-# ভয়েস ইনপুট ও মাইক কন্ট্রোল সেকশন
-st.write("### 🎙️ ভয়েস ইনপুট (মাইক কন্ট্রোল)")
-col_mic, col_status = st.columns([1, 2])
-
-with col_mic:
-    # ব্রাউজার সাপোর্টেড সরাসরি অডিও ইনপুট বাটন
-    audio_data = st.audio_input("মাইক ট্যাপ করুন")
-
-with col_status:
-    if audio_data:
-        st.success("মাইক রেকর্ড গ্রহণ করেছে! প্রসেস করা হচ্ছে...")
-    else:
-        st.info("কথা বলতে মাইক চাপুন, বন্ধ করতে আবার ট্যাপ করুন।")
-
-# দ্রুত আইডিয়া পাওয়ার জন্য হুক বাটন
-st.markdown("---")
-st.write("**আইডিয়া বেছে নিন:**")
-h_col1, h_col2 = st.columns(2)
-with h_col1:
-    if st.button("🔥 রোস্টিং/রিঅ্যাকশন হুক", use_container_width=True):
-        st.session_state["preset_prompt"] = "একটি চরম আকর্ষণীয় রোস্টিং ভিডিওর ৩ সেকেন্ডের হুক লিখে দাও।"
-with h_col2:
-    if st.button("📢 প্রমোশনাল হুক", use_container_width=True):
-        st.session_state["preset_prompt"] = "একটি কাস্টমার আকৃষ্ট করার মতো প্রমোশনাল বিজ্ঞাপনের হুক লিখে দাও।"
-
-# চ্যাট হিস্ট্রি ধরে রাখার ব্যবস্থা
-if "messages" not in st.session_state:
+# মেসেজ হিস্ট্রি
+if "messages" not in st.session_state or len(st.session_state.messages) == 0:
     st.session_state.messages = [
-        {"role": "assistant", "content": "নমস্কার/সালাম! আমি আপনার ভাইরাল হুক সহকারী। আপনার ভিডিও বা পণ্যের বিষয় বলুন, অথবা নিচে মাইক দিয়ে কথা বলুন।"}
+        {"role": "assistant", "content": "আমি আপনার ভাইরাল হুক সহকারী। আপনার কনটেন্টের আইডিয়া বলুন বা ভিডিওর বিষয় লিখে জানান।"}
     ]
 
-# চ্যাট মেসেজ প্রদর্শন
+# মেসেজগুলো রেন্ডার করা
 for msg in st.session_state.messages:
-    with st.chat_message(msg["role"]):
-        st.write(msg["content"])
+    if msg["role"] == "user":
+        st.markdown(f'''
+        <div class="user-bubble-container">
+            <div class="user-bubble">{msg["content"]}</div>
+        </div>
+        ''', unsafe_allow_html=True)
+    else:
+        st.markdown(f'''
+        <div class="bot-response-container">
+            <div class="bot-sparkle">✦</div>
+            <div class="bot-text">{msg["content"]}</div>
+        </div>
+        ''', unsafe_allow_html=True)
 
-# প্রিসেট বাটন থেকে আসা প্রম্পট হ্যান্ডেল করা
-default_text = st.session_state.pop("preset_prompt", None)
+# মাইক্রোফোন ভয়েস ইনপুট টগল (পপ-আপ / কলাপ্সিবল)
+with st.expander("🎙️ ভয়েস রেকর্ড অন/অফ করতে এখানে ট্যাপ করুন"):
+    voice_audio = st.audio_input("কথা বলুন")
+    if voice_audio:
+        st.info("ভয়েস রেকর্ড গ্রহণ করা হয়েছে।")
 
-# নিচে আধুনিক চ্যাট ইনপুট বার
-user_query = st.chat_input("আপনার প্রশ্ন বা কনসেপ্ট এখানে লিখুন...") or default_text
+# নিচের জেমিনাই স্টাইল সার্চ বার
+prompt = st.chat_input("ViralHook-কে কিছু জিজ্ঞাসা করুন...")
 
-if user_query:
-    # ব্যবহারকারীর মেসেজ যোগ
-    st.session_state.messages.append({"role": "user", "content": user_query})
-    with st.chat_message("user"):
-        st.write(user_query)
+if prompt:
+    # ইউজারের চ্যাট অ্যাড
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    
+    # আকর্ষণীয় ভাইরাল হুক তৈরি
+    ai_reply = f"""**"{prompt}"**-এর জন্য কিছু দুর্দান্ত ভাইরাল হুক আইডিয়া:
 
-    # এআই উত্তর জেনারেট
-    with st.chat_message("assistant"):
-        response_placeholder = st.empty()
-        reply_text = f"**{user_query}** নিয়ে কিছু দুর্দান্ত ভাইরাল হুক অপশন:\n\n1. *'আপনি কি জানেন ৯৯% মানুষ এই বড় ভুলটি করে?...'*\n2. *'ভিডিওটা স্কিপ করার আগে মাত্র ৩ সেকেন্ড সময় দিন!'*\n3. *'শেষ অব্দি না দেখলে কিন্তু চরম মিস করবেন!'*"
-        response_placeholder.markdown(reply_text)
-        st.session_state.messages.append({"role": "assistant", "content": reply_text})
+1. **কৌতূহল হুক:** *"এই ভুলটা করার আগে মাত্র ৩ সেকেন্ড ভাবুন... কারণ এটাই আপনার ৯০% লস করাচ্ছে!"*
+2. **চ্যালেঞ্জিং হুক:** *"ভিডিওটা শেষ অব্দি দেখার সাহস আছে তো? সত্যিটা শুনলে চমকে যাবেন!"*
+3. **সরাসরি ভ্যালু হুক:** *"মাত্র ২টি নিয়ম মেনে চললে ফলাফল দেখে আপনি নিজেই বিশ্বাস করতে পারবেন না!"*"""
+    
+    st.session_state.messages.append({"role": "assistant", "content": ai_reply})
+    st.rerun()
