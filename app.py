@@ -9,8 +9,8 @@ st.caption("Reels & Shorts Viral Hook + Script Generator")
 
 api_key = st.sidebar.text_input("Groq API Key", type="password")
 
-# সক্রিয় মডেলগুলোর তালিকা
-selected_model = st.sidebar.selectbox(selected_model = st.sidebar.selectbox(
+# সক্রিয় মডেলগুলোর তালিকা  
+selected_model = st.sidebar.selectbox(
     "AI Model বেছে নিন:",
     [
         "llama-3.1-8b-instant",
