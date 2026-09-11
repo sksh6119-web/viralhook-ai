@@ -1,146 +1,110 @@
 import streamlit as st
-from groq import Groq
-import re
-import json
 
-st.set_page_config(
-    page_title="AI Chat Master",
-    page_icon="🎙️",
-    layout="centered"
-)
+# পেজ কনফিগারেশন
+st.set_page_config(page_title="ViralHook AI", page_icon="⚡", layout="centered")
 
+# মডার্ন স্টাইলিং ও কাস্টম সার্চ বার সিএসএস
 st.markdown("""
     <style>
-    .chat-header {
-        text-align: center;
-        padding: 8px;
-        margin-bottom: 15px;
+    /* ব্যাকগ্রাউন্ড ও টেক্সট স্টাইল */
+    .stApp {
+        background-color: #0e1117;
+        color: #ffffff;
     }
-    .chat-header h1 {
-        font-size: 2rem;
-        background: linear-gradient(45deg, #FF4B4B, #FF8533);
+    /* হেডার ও হুক স্টাইল */
+    .header-box {
+        text-align: center;
+        padding: 20px 0;
+    }
+    .main-title {
+        font-size: 2.2rem;
+        font-weight: 700;
+        background: linear-gradient(90deg, #ff4b4b, #ff8533);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        margin-bottom: 4px;
+        margin-bottom: 5px;
     }
-    .chat-header p {
-        color: #6c757d;
+    .sub-title {
+        color: #9aa0a6;
         font-size: 0.95rem;
     }
+    /* কুইক অ্যাকশন হুক বাটন */
+    .hook-pill {
+        display: inline-block;
+        background: #1f2937;
+        color: #e5e7eb;
+        padding: 8px 14px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        margin: 4px;
+        border: 1px solid #374151;
+    }
+    /* চ্যাট ইনপুট ডিজাইন */
+    div[data-testid="stChatInput"] {
+        border-radius: 30px !important;
+    }
     </style>
-    <div class="chat-header">
-        <h1>🎙️ AI Voice & Chat Master</h1>
-        <p>সরাসরি উত্তর, মিষ্টি ও মধুর কণ্ঠ — নতুন প্রশ্ন করলেই আগের কথা সাথে সাথে বন্ধ!</p>
-    </div>
 """, unsafe_allow_html=True)
 
-with st.sidebar:
-    st.header("⚙️ অডিও সেটিংস")
-    voice_gender = st.radio(
-        "কণ্ঠ নির্বাচন করুন:",
-        ["মেয়ের মিষ্টি ও নরম কণ্ঠ", "ছেলের স্পষ্ট ও গম্ভীর কণ্ঠ"],
-        index=0
-    )
-    auto_speak = st.checkbox("ভয়েস আউটপুট চালু রাখুন", value=True)
-    if st.button("🛑 চলমান কথা এখনই থামান", use_container_width=True):
-        st.components.v1.html("<script>window.speechSynthesis.cancel();</script>", height=0)
-    if st.button("🗑️ চ্যাট ক্লিয়ার করুন", use_container_width=True):
-        st.session_state.messages = []
-        st.rerun()
+# শীর্ষভাগ (Header)
+st.markdown("""
+<div class="header-box">
+    <div class="main-title">⚡ ViralHook AI</div>
+    <div class="sub-title">আকর্ষণীয় ভাইরাল হুক, ক্যাপশন ও স্ক্রিপ্ট তৈরির পার্সোনাল অ্যাসিস্ট্যান্ট</div>
+</div>
+""", unsafe_allow_html=True)
 
-token = st.secrets.get("GROQ_API_KEY")
+# ভয়েস ইনপুট ও মাইক কন্ট্রোল সেকশন
+st.write("### 🎙️ ভয়েস ইনপুট (মাইক কন্ট্রোল)")
+col_mic, col_status = st.columns([1, 2])
 
+with col_mic:
+    # ব্রাউজার সাপোর্টেড সরাসরি অডিও ইনপুট বাটন
+    audio_data = st.audio_input("মাইক ট্যাপ করুন")
+
+with col_status:
+    if audio_data:
+        st.success("মাইক রেকর্ড গ্রহণ করেছে! প্রসেস করা হচ্ছে...")
+    else:
+        st.info("কথা বলতে মাইক চাপুন, বন্ধ করতে আবার ট্যাপ করুন।")
+
+# দ্রুত আইডিয়া পাওয়ার জন্য হুক বাটন
+st.markdown("---")
+st.write("**আইডিয়া বেছে নিন:**")
+h_col1, h_col2 = st.columns(2)
+with h_col1:
+    if st.button("🔥 রোস্টিং/রিঅ্যাকশন হুক", use_container_width=True):
+        st.session_state["preset_prompt"] = "একটি চরম আকর্ষণীয় রোস্টিং ভিডিওর ৩ সেকেন্ডের হুক লিখে দাও।"
+with h_col2:
+    if st.button("📢 প্রমোশনাল হুক", use_container_width=True):
+        st.session_state["preset_prompt"] = "একটি কাস্টমার আকৃষ্ট করার মতো প্রমোশনাল বিজ্ঞাপনের হুক লিখে দাও।"
+
+# চ্যাট হিস্ট্রি ধরে রাখার ব্যবস্থা
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": "নমস্কার/সালাম! আমি আপনার পার্সোনাল এআই। যেকোনো প্রশ্ন করুন, সরাসরি উত্তর ও সুন্দর কণ্ঠে শুনতে পাবেন।"}
+        {"role": "assistant", "content": "নমস্কার/সালাম! আমি আপনার ভাইরাল হুক সহকারী। আপনার ভিডিও বা পণ্যের বিষয় বলুন, অথবা নিচে মাইক দিয়ে কথা বলুন।"}
     ]
 
+# চ্যাট মেসেজ প্রদর্শন
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
-        st.markdown(msg["content"])
+        st.write(msg["content"])
 
-if user_prompt := st.chat_input("আপনার প্রশ্ন বা মনের কথা লিখুন..."):
-    # আপনি প্রশ্ন পাঠানোর সাথে সাথে আগের বাজতে থাকা ভয়েস এক সেকেন্ডে অফ হয়ে যাবে
-    st.components.v1.html("<script>window.speechSynthesis.cancel();</script>", height=0)
+# প্রিসেট বাটন থেকে আসা প্রম্পট হ্যান্ডেল করা
+default_text = st.session_state.pop("preset_prompt", None)
 
-    st.session_state.messages.append({"role": "user", "content": user_prompt})
+# নিচে আধুনিক চ্যাট ইনপুট বার
+user_query = st.chat_input("আপনার প্রশ্ন বা কনসেপ্ট এখানে লিখুন...") or default_text
+
+if user_query:
+    # ব্যবহারকারীর মেসেজ যোগ
+    st.session_state.messages.append({"role": "user", "content": user_query})
     with st.chat_message("user"):
-        st.markdown(user_prompt)
+        st.write(user_query)
 
-    if not token:
-        st.error("API Key পাওয়া যায়নি! Streamlit Secrets চেক করুন।")
-    else:
-        try:
-            client = Groq(api_key=token.strip())
-            
-            models_data = client.models.list().data
-            usable_models = [m.id for m in models_data if "whisper" not in m.id and "vision" not in m.id]
-            target_model = usable_models[0]
-
-            with st.chat_message("assistant"):
-                with st.spinner("উত্তর ভাবছি..."):
-                    system_prompt = """
-                    You are a highly intelligent, natural, empathetic, and sweet conversational AI.
-                    Rules:
-                    1. Detect the user's language automatically and answer strictly in that language (Bengali, Hindi, or English).
-                    2. Never use robotic filler or formal announcements. Give direct, heartfelt, and clear responses.
-                    3. If romance or emotions: Respond with gentle poetic grace and sweetness.
-                    4. If religion, politics, or facts: Provide objective, respectful, and direct facts.
-                    5. Strictly NEVER write internal thoughts or <think> tags.
-                    """
-
-                    convo_history = [{"role": "system", "content": system_prompt}]
-                    for m in st.session_state.messages:
-                        convo_history.append({"role": m["role"], "content": m["content"]})
-
-                    completion = client.chat.completions.create(
-                        model=target_model,
-                        messages=convo_history,
-                        temperature=0.7,
-                    )
-
-                    raw_ans = completion.choices[0].message.content
-                    clean_ans = re.sub(r'<think>.*?</think>', '', raw_ans, flags=re.DOTALL).strip()
-
-                    st.markdown(clean_ans)
-                    st.session_state.messages.append({"role": "assistant", "content": clean_ans})
-
-                    if auto_speak:
-                        speech_text = re.sub(r'[*#_`>\[\]\(\)]', '', clean_ans).replace("\n", " ")[:300]
-                        speech_json = json.dumps(speech_text)
-                        is_female = "true" if "মেয়ের" in voice_gender else "false"
-
-                        st.components.v1.html(f"""
-                        <script>
-                            window.speechSynthesis.cancel();
-                            const speechData = {speech_json};
-                            const femaleMode = {is_female};
-                            
-                            const utterance = new SpeechSynthesisUtterance(speechData);
-                            
-                            const hasBengali = /[\\u0980-\\u09FF]/.test(speechData);
-                            const hasHindi = /[\\u0900-\\u097F]/.test(speechData);
-                            utterance.lang = hasBengali ? 'bn-IN' : (hasHindi ? 'hi-IN' : 'en-US');
-
-                            // খেনখেনে ভাব দূর করার ন্যাচারাল মিষ্টি টিউনিং
-                            if (femaleMode) {{
-                                utterance.pitch = 1.05;  // খুব বেশি হাই নয়, সফট মিষ্টি টোন
-                                utterance.rate = 0.90;   // শান্ত ও মিষ্টি ধীরগতি
-                            }} else {{
-                                utterance.pitch = 0.85;  // রাশভারী গম্ভীর টোন
-                                utterance.rate = 0.92;
-                            }}
-
-                            const voices = window.speechSynthesis.getVoices();
-                            const naturalVoice = voices.find(v => v.lang.startsWith(utterance.lang.slice(0, 2)) && 
-                                (v.name.includes("Google") || v.name.includes("Natural") || v.name.includes("Neural")));
-                            if (naturalVoice) {{
-                                utterance.voice = naturalVoice;
-                            }}
-
-                            window.speechSynthesis.speak(utterance);
-                        </script>
-                        """, height=0)
-
-        except Exception as e:
-            st.error(f"Error: {e}")
+    # এআই উত্তর জেনারেট
+    with st.chat_message("assistant"):
+        response_placeholder = st.empty()
+        reply_text = f"**{user_query}** নিয়ে কিছু দুর্দান্ত ভাইরাল হুক অপশন:\n\n1. *'আপনি কি জানেন ৯৯% মানুষ এই বড় ভুলটি করে?...'*\n2. *'ভিডিওটা স্কিপ করার আগে মাত্র ৩ সেকেন্ড সময় দিন!'*\n3. *'শেষ অব্দি না দেখলে কিন্তু চরম মিস করবেন!'*"
+        response_placeholder.markdown(reply_text)
+        st.session_state.messages.append({"role": "assistant", "content": reply_text})
