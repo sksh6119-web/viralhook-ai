@@ -7,7 +7,6 @@ st.set_page_config(page_title="AI Assistant", page_icon="🤖", layout="centered
 st.title("🤖 AI অ্যাসিস্ট্যান্ট")
 st.caption("আপনার যেকোনো কথা বা প্রশ্ন লিখুন, বুদ্ধিমান AI সাথে সাথে সবকিছুর উত্তর দেবে।")
 
-# Adsterra বিজ্ঞাপনের বাটন
 ad_link = "https://www.profitableratecpmnetwork.com/h7ssyv17p?key=eb8a14de90b0395f65ebf374d7d4ca71"
 st.markdown(
     f"""
@@ -31,14 +30,12 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# আপনার ফিক্সড Groq API Key
 GROQ_API_KEY = "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"
 client = Groq(api_key=GROQ_API_KEY)
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# চ্যাট মেসেজ এবং স্পষ্ট ভয়েস বাটন
 for idx, message in enumerate(st.session_state.messages):
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
@@ -60,7 +57,6 @@ for idx, message in enumerate(st.session_state.messages):
                     height=0
                 )
 
-# প্রশ্ন করার বক্স
 if prompt := st.chat_input("যেকোনো প্রশ্ন বা কথা এখানে লিখুন..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
