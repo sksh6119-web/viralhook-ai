@@ -79,7 +79,7 @@ if prompt := st.chat_input("যেকোনো প্রশ্ন বা কথ�
                         {"role": "system", "content": system_prompt},
                         *[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages]
                     ],
-                    model="llama-3.3-70b-versatile",
+                    model="llama-3.1-8b-instant",
                 )
                 response_text = chat_completion.choices[0].message.content
                 st.markdown(response_text)
