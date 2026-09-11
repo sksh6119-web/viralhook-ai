@@ -3,106 +3,140 @@ from groq import Groq
 import re
 import json
 
-st.set_page_config(page_title="Super AI Master Live", page_icon="❤️", layout="centered")
+st.set_page_config(
+    page_title="AI Chat Master",
+    page_icon="🤖",
+    layout="centered"
+)
 
 st.markdown("""
     <style>
-    .main-title {
+    .chat-header {
         text-align: center;
-        font-size: 2.2rem;
-        font-weight: 800;
-        background: -webkit-linear-gradient(45deg, #ff416c, #ff4b2b);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-    .sub-title {
-        text-align: center;
-        color: #6c757d;
-        font-size: 1rem;
+        padding: 10px;
         margin-bottom: 20px;
     }
+    .chat-header h1 {
+        font-size: 2rem;
+        background: linear-gradient(45deg, #FF4B4B, #FF8533);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 5px;
+    }
+    .chat-header p {
+        color: #6c757d;
+        font-size: 0.95rem;
+    }
     </style>
+    <div class="chat-header">
+        <h1>🤖 AI Chat Master</h1>
+        <p>ধর্ম, রাজনীতি, রোমান্স কিংবা টেকনিক্যাল প্রশ্ন — যেকোনো ভাষায় সরাসরি উত্তর ও মিষ্টি লাইভ ভয়েস!</p>
+    </div>
 """, unsafe_allow_html=True)
 
-st.markdown('<p class="main-title">❤️ Super AI Master Live</p>', unsafe_allow_html=True)
-st.markdown('<p class="sub-title">ভালোবাসা, ধর্ম, রাজনীতি, ফটো-ভিডিও আইডিয়া — সরাসরি উত্তর ও লাইভ ভয়েস!</p>', unsafe_allow_html=True)
+with st.sidebar:
+    st.header("⚙️ ভয়েস সেটিংস")
+    voice_gender = st.radio(
+        "কণ্ঠ নির্বাচন করুন:",
+        ["মেয়ের মিষ্টি ও মধুর কণ্ঠ", "ছেলের গম্ভীর কণ্ঠ"],
+        index=0
+    )
+    auto_speak = st.checkbox("স্বয়ংক্রিয়ভাবে কথা বলবে (Auto-Speak)", value=True)
+    if st.button("🗑️ নতুন চ্যাট শুরু করুন", use_container_width=True):
+        st.session_state.messages = []
+        st.rerun()
 
-k = st.secrets.get("GROQ_API_KEY")
+token = st.secrets.get("GROQ_API_KEY")
 
-col1, col2 = st.columns(2)
-with col1:
-    voice_choice = st.selectbox("🎙️ কার কণ্ঠে শুনবেন?", ["মেয়ের মিষ্টি কণ্ঠ", "ছেলের রাশভারী কণ্ঠ"])
-with col2:
-    mode_choice = st.selectbox("💡 ক্যাটাগরি", [
-        "ভালোবাসা ও রোমান্টিক কথা ❤️",
-        "পবিত্র ধর্মগ্রন্থ ও ইতিহাস 📖",
-        "রাজনীতি ও সমসাময়িক বিষয় 🏛️",
-        "ফটো ও ভিডিও এডিটিং আইডিয়া 🎬",
-        "যেকোনো সাধারণ প্রশ্নের উত্তর ⚡"
-    ])
+if "messages" not in st.session_state:
+    st.session_state.messages = [
+        {"role": "assistant", "content": "নমস্কার/সালাম! আমি আপনার পার্সোনাল এআই। যেকোনো বিষয়ে প্রশ্ন করুন—আমি সরাসরি সেই ভাষাতেই আপনাকে উত্তর দেব।"}
+    ]
 
-user_text = st.text_area(
-    "আপনার মনের কথা বা প্রশ্ন লিখুন:",
-    placeholder="যেমন: ভালোবাসার মানুষকে মুগ্ধ করার কথা, বা কোরআন/বাইবেলের তথ্য, কিংবা ফটো এডিটের আইডিয়া...",
-    height=100
-)
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
 
-if st.button("🚀 সরাসরি উত্তর ও লাইভ ভয়েস শুনুন", use_container_width=True):
-    if not user_text.strip():
-        st.warning("দয়া করে কিছু একটি লিখুন!")
-    elif not k:
-        st.error("API Key পাওয়া যায়নি! Secrets চেক করুন।")
+if user_prompt := st.chat_input("আপনার প্রশ্ন বা মনের কথা এখানে লিখুন..."):
+    st.session_state.messages.append({"role": "user", "content": user_prompt})
+    with st.chat_message("user"):
+        st.markdown(user_prompt)
+
+    if not token:
+        st.error("API Key পাওয়া যায়নি! Streamlit Secrets চেক করুন।")
     else:
         try:
-            client = Groq(api_key=k.strip())
-
+            client = Groq(api_key=token.strip())
+            
             models_data = client.models.list().data
             usable_models = [m.id for m in models_data if "whisper" not in m.id and "vision" not in m.id]
-            selected_model = usable_models[0]
+            target_model = usable_models[0]
 
-            with st.spinner("উত্তর তৈরি হচ্ছে..."):
-                prompt = f"""
-                You are an all-knowing, empathetic, and sharp AI companion.
-                Context/Category: {mode_choice}
-                Rules:
-                - Answer immediately and directly without any introductory greetings, disclaimers, or filler.
-                - If the question is about romance, relationship, or feelings, respond with deep charm, emotional resonance, and lyrical warmth in natural Bengali.
-                - If the question is about holy scriptures (Quran, Bible, Gita), politics, or technical steps (photo/video editing concepts), deliver direct, factual, and neutral answers in standard Bengali.
-                - Strictly NEVER write thinking steps, internal scratchpads, or <think> tags.
-                
-                User Query: {user_text}
-                """
+            with st.chat_message("assistant"):
+                with st.spinner("উত্তর তৈরি হচ্ছে..."):
+                    
+                    system_prompt = """
+                    You are a highly intelligent, empathetic, direct, and multi-lingual AI assistant.
+                    Rules:
+                    1. Match the exact language of the user's prompt (Bengali, Hindi, English, etc.).
+                    2. Provide direct, objective, and deeply helpful answers immediately. No unnecessary introductory remarks or filler disclaimers.
+                    3. If asked about love, relationships, or emotions, speak with genuine charm, warmth, and resonance.
+                    4. If asked about scriptures (Quran, Bible, Gita), history, or politics, provide accurate, neutral, and respectful facts.
+                    5. For photo/video editing, provide precise instructions or prompts.
+                    6. Strictly NEVER output internal thoughts or <think> tags.
+                    """
 
-                completion = client.chat.completions.create(
-                    model=selected_model,
-                    messages=[{"role": "user", "content": prompt}],
-                    temperature=0.7,
-                )
+                    convo_history = [{"role": "system", "content": system_prompt}]
+                    for m in st.session_state.messages:
+                        convo_history.append({"role": m["role"], "content": m["content"]})
 
-                response_content = completion.choices[0].message.content
-                clean_text = re.sub(r'<think>.*?</think>', '', response_content, flags=re.DOTALL).strip()
+                    completion = client.chat.completions.create(
+                        model=target_model,
+                        messages=convo_history,
+                        temperature=0.7,
+                    )
 
-                st.markdown(clean_text)
+                    raw_ans = completion.choices[0].message.content
+                    clean_ans = re.sub(r'<think>.*?</think>', '', raw_ans, flags=re.DOTALL).strip()
 
-                spoken_text = re.sub(r'[*#_`>\[\]\(\)]', '', clean_text).replace("\n", " ")[:350]
-                speech_payload = json.dumps(spoken_text)
-                is_female = "true" if "মেয়ের" in voice_choice else "false"
+                    st.markdown(clean_ans)
+                    st.session_state.messages.append({"role": "assistant", "content": clean_ans})
 
-                st.components.v1.html(f"""
-                <script>
-                    const speechData = {speech_payload};
-                    const femaleMode = {is_female};
-                    window.speechSynthesis.cancel();
-                    const voiceMessage = new SpeechSynthesisUtterance(speechData);
-                    voiceMessage.lang = 'bn-IN';
-                    voiceMessage.pitch = femaleMode ? 1.35 : 0.85;
-                    voiceMessage.rate = 1.0;
-                    window.speechSynthesis.speak(voiceMessage);
-                </script>
-                <div style="margin-top:10px; padding: 8px; background-color: #ffe4e6; border: 1px solid #fda4af; border-radius: 8px; color: #be123c; text-align: center; font-weight: bold;">
-                    🔊 AI সরাসরি {voice_choice} কথা বলছে...
-                </div>
-                """, height=70)
+                    if auto_speak:
+                        speech_text = re.sub(r'[*#_`>\[\]\(\)]', '', clean_ans).replace("\n", " ")[:350]
+                        speech_json = json.dumps(speech_text)
+                        is_female = "true" if "মেয়ের" in voice_gender else "false"
 
-        except Exception as err:
-            st.error(f"Error: {err}")
+                        st.components.v1.html(f"""
+                        <script>
+                            const speechData = {speech_json};
+                            const femaleMode = {is_female};
+                            window.speechSynthesis.cancel();
+                            
+                            const utterance = new SpeechSynthesisUtterance(speechData);
+                            
+                            const hasBengali = /[\\u0980-\\u09FF]/.test(speechData);
+                            const hasHindi = /[\\u0900-\\u097F]/.test(speechData);
+                            const targetLang = hasBengali ? 'bn-IN' : (hasHindi ? 'hi-IN' : 'en-US');
+                            utterance.lang = targetLang;
+
+                            if (femaleMode) {{
+                                utterance.pitch = 1.25;
+                                utterance.rate = 0.95;
+                            }} else {{
+                                utterance.pitch = 0.90;
+                                utterance.rate = 0.95;
+                            }}
+
+                            const voices = window.speechSynthesis.getVoices();
+                            const bestVoice = voices.find(v => v.lang.startsWith(targetLang.slice(0, 2)) && (v.name.includes("Google") || v.name.includes("Natural")));
+                            if (bestVoice) {{
+                                utterance.voice = bestVoice;
+                            }}
+
+                            window.speechSynthesis.speak(utterance);
+                        </script>
+                        """, height=0)
+
+        except Exception as e:
+            st.error(f"Error: {e}")
