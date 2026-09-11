@@ -141,3 +141,4 @@ if prompt:
     bot_reply = f"আমি আপনার কথা বুঝতে পেরেছি: '{prompt}'। আপনার জন্য ভাইরাল কনটেন্ট তৈরি করা হলো!"
     st.session_state.history.append({"role": "assistant", "text": bot_reply})
     st.rerun()
+st.markdown("""<div style="text-align: center; margin: 20px 0;"><a href="https://www.profitableratecpmnetwork.com/h7ssyv17p?key=eb8a14de90b0395f65ebf374d7d4ca71" target="_blank"><button style="background: linear-gradient(90deg, #ff4b4b, #ff7676); color: white; padding: 12px 24px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer;">🎁 Support Us / Check Offer</button></a></div>""", unsafe_allow_html=True)
