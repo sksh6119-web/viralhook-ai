@@ -1,39 +1,73 @@
 import streamlit as st
 from groq import Groq
+import json
 
-st.set_page_config(page_title="ViralHook AI", page_icon="⚡", layout="centered")
+st.set_page_config(
+    page_title="Super AI Live",
+    page_icon="🎙️",
+    layout="centered"
+)
 
-st.title("⚡ ViralHook AI")
-st.caption("Reels & Shorts Viral Hook + Script Generator")
+st.markdown("""
+    <style>
+    .main-title {
+        text-align: center;
+        font-size: 2.2rem;
+        font-weight: 800;
+        background: -webkit-linear-gradient(45deg, #FF4B4B, #FF8533);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .sub-title {
+        text-align: center;
+        color: #6c757d;
+        font-size: 1rem;
+        margin-bottom: 20px;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
-# Secrets থেকে স্বয়ংক্রিয়ভাবে API Key নেওয়া
+st.markdown('<p class="main-title">🎙️ Super AI Live Master</p>', unsafe_allow_html=True)
+st.markdown('<p class="sub-title">যা চাইবেন তাই পাবেন — সরাসরি লাইভ কথা বলবে আপনার সাথে!</p>', unsafe_allow_html=True)
+
 api_key = st.secrets.get("GROQ_API_KEY")
 
-topic = st.text_area("ভিডিওর বিষয় বা টপিক লিখুন:", placeholder="যেমন: ফেসবুক থেকে টাকা আয় করার ৩টি সহজ উপায়...")
+mode = st.selectbox(
+    "💡 আপনি কী জানতে বা তৈরি করতে চান?",
+    [
+        "⚡ রিল ও শর্টস স্ক্রিপ্ট (হুক + ডায়ালগ)",
+        "🔥 সোশ্যাল মিডিয়া ভাইরাল পোস্ট ও ক্যাপশন",
+        "❓ যেকোনো বিষয়ের লাইভ প্রশ্ন-উত্তর",
+        "✍️ গল্প, কবিতা ও ক্রিয়েটিভ কন্টেন্ট",
+        "📢 ব্যবসা ও প্রোডাক্ট বিক্রির আকর্ষণীয় অফার"
+    ]
+)
 
-if st.button("Generate Viral Pack"):
-    if not topic:
-        st.warning("দয়া করে কোনো টপিক লিখুন!")
+user_input = st.text_area(
+    "আপনার প্রশ্ন বা বিষয় লিখুন:",
+    placeholder="যেমন: দ্রুত ভিউ বাড়ানোর ৩টি টিপস বলো, অথবা মজার একটি প্রেমের কবিতা শোনাও...",
+    height=100
+)
+
+if st.button("🚀 উত্তর দিন ও লাইভ কথা বলুন", use_container_width=True):
+    if not user_input.strip():
+        st.warning("দয়া করে কিছু লিখুন!")
     elif not api_key:
-        st.error("API Key পাওয়া যায়নি! Secrets সেটিংস চেক করুন।")
+        st.error("API Key পাওয়া যায়নি! Secrets চেক করুন।")
     else:
         try:
-            clean_key = api_key.strip()
-            client = Groq(api_key=clean_key)
+            client = Groq(api_key=api_key.strip())
 
             models_list = client.models.list().data
             valid_models = [m.id for m in models_list if "whisper" not in m.id and "vision" not in m.id]
             active_model = valid_models[0]
 
-            with st.spinner("AI স্ক্রিপ্ট তৈরি করছে..."):
+            with st.spinner("AI উত্তর তৈরি করছে..."):
                 prompt = f"""
-                You are an expert viral social media scriptwriter. Write in Bengali.
-                Create:
-                1. Three scroll-stopping hooks.
-                2. A full 30-45 second short video script with visual/action cues.
-                3. One clickable thumbnail idea.
-
-                Topic: {topic}
+                You are an interactive Bengali AI assistant.
+                Mode: {mode}
+                Provide an energetic, direct, and conversational answer in clean Bengali.
+                User: {user_input}
                 """
                 completion = client.chat.completions.create(
                     model=active_model,
@@ -41,7 +75,28 @@ if st.button("Generate Viral Pack"):
                     temperature=0.7,
                 )
 
-                st.success("তৈরি সম্পন্ন হয়েছে!")
-                st.markdown(completion.choices[0].message.content)
+                answer = completion.choices[0].message.content
+                st.markdown(answer)
+
+                # লাইভ কথা বলার জন্য টেক্সট রেডি করা
+                clean_text = answer.replace("*", "").replace("#", "").replace("\n", " ")[:350]
+                speech_text_json = json.dumps(clean_text)
+
+                # ব্রাউজারের লাইভ ভয়েস ইঞ্জিন (Instant Speech Synthesis)
+                st.components.v1.html(f"""
+                <script>
+                    const text = {speech_text_json};
+                    window.speechSynthesis.cancel();
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.lang = 'bn-IN';
+                    utterance.rate = 1.0;
+                    utterance.pitch = 1.0;
+                    window.speechSynthesis.speak(utterance);
+                </script>
+                <div style="padding: 10px; background-color: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; color: #15803d; text-align: center; font-weight: bold;">
+                    🔊 AI সরাসরি লাইভ কথা বলছে... (ভলিউম বাড়িয়ে শুনুন)
+                </div>
+                """, height=80)
+
         except Exception as e:
             st.error(f"Error: {e}")
