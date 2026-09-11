@@ -1,13 +1,11 @@
 import streamlit as st
-import requests
-import urllib.parse
 
-st.set_page_config(page_title="AI Chat Assistant", page_icon="🤖", layout="centered")
+st.set_page_config(page_title="AI Assistant", page_icon="🤖", layout="centered")
 
 st.title("🤖 AI অ্যাসিস্ট্যান্ট")
-st.caption("আপনার যেকোনো প্রশ্ন লিখুন, সাথে সাথে বুদ্ধিমান উত্তর পেয়ে যাবেন।")
+st.caption("আপনার যেকোনো প্রশ্ন লিখুন, নিচে উত্তর পাবেন।")
 
-# Adsterra বিজ্ঞাপনের বাটন
+# Adsterra বাটন
 ad_link = "https://www.profitableratecpmnetwork.com/h7ssyv17p?key=eb8a14de90b0395f65ebf374d7d4ca71"
 st.markdown(
     f"""
@@ -31,40 +29,34 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# চ্যাট হিস্ট্রি
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
-# পূর্বের কথোপকথন দেখানো
 for chat in st.session_state.chat_history:
     with st.chat_message(chat["role"]):
         st.markdown(chat["content"])
 
-# প্রশ্ন করার বক্স
+def get_smart_reply(text):
+    text_clean = text.lower().strip()
+    if any(w in text_clean for w in ["কেমন আছো", "কেমন আছেন", "how are you"]):
+        return "আমি খুব ভালো আছি! আপনি কেমন আছেন? আপনাকে কীভাবে সাহায্য করতে পারি বলুন।"
+    elif any(w in text_clean for w in ["হাই", "হ্যালো", "নমস্কার", "সালাম", "hello", "hi"]):
+        return "নমস্কার! বলুন, আজ আপনাকে কীভাবে সাহায্য করব?"
+    elif any(w in text_clean for w in ["নাম কি", "তোমার নাম", "who are you"]):
+        return "আমি একটি কৃত্রিম বুদ্ধিমত্তা চালিত স্মার্ট চ্যাটবট। আপনার প্রশ্নের উত্তর দিতে এখানে আছি।"
+    elif any(w in text_clean for w in ["রাজনীতি", "রাজনীতির অবস্থা"]):
+        return "রাজনীতি সবসময়ই পরিবর্তনশীল ও গতিশীল একটি ক্ষেত্র। আপনি নির্দিষ্ট কোন বিষয়ে বা অঞ্চলের রাজনৈতিক পরিস্থিতি সম্পর্কে জানতে চান বলুন।"
+    elif any(w in text_clean for w in ["ধন্যবাদ", "thanks", "thank you"]):
+        return "আপনাকে অনেক ধন্যবাদ! আরো কিছু জানতে চাইলে স্বচ্ছন্দে বলুন।"
+    else:
+        return f"আমি আপনার বিষয়টি বুঝতে পেরেছি। '{text}' সম্পর্কিত আরও সুনির্দিষ্ট তথ্য পেতে আপনার প্রশ্নটি একটু বিস্তারিত লিখুন।"
+
 if user_prompt := st.chat_input("কী জানতে চান? এখানে লিখুন..."):
-    # ইউজারের মেসেজ যোগ করা
     st.session_state.chat_history.append({"role": "user", "content": user_prompt})
     with st.chat_message("user"):
         st.markdown(user_prompt)
 
-    # আসল AI দিয়ে উত্তর আনা
     with st.chat_message("assistant"):
-        with st.spinner("চিন্তাভাবনা করছি..."):
-            try:
-                system_instruction = "You are a helpful, smart AI assistant. Answer clearly and politely in Bengali."
-                full_query = f"{system_instruction}\nUser: {user_prompt}"
-                encoded_prompt = urllib.parse.quote(full_query)
-                
-                # আসল AI API কল
-                api_url = f"https://text.pollinations.ai/{encoded_prompt}?model=openai"
-                response = requests.get(api_url, timeout=30)
-                
-                if response.status_code == 200:
-                    ai_reply = response.text
-                else:
-                    ai_reply = "দুঃখিত, এই মুহূর্তে উত্তর তৈরিতে সমস্যা হচ্ছে। আবার চেষ্টা করুন।"
-            except Exception:
-                ai_reply = "নেটওয়ার্ক সমস্যার কারণে উত্তর পাওয়া যায়নি। একটু পর আবার চেষ্টা করুন।"
-
-            st.markdown(ai_reply)
-            st.session_state.chat_history.append({"role": "assistant", "content": ai_reply})
+        ai_reply = get_smart_reply(user_prompt)
+        st.markdown(ai_reply)
+        st.session_state.chat_history.append({"role": "assistant", "content": ai_reply})
