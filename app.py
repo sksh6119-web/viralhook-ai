@@ -38,7 +38,7 @@ client = Groq(api_key=GROQ_API_KEY)
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# চ্যাট মেসেজ এবং স্পষ্ট ভয়েস বাটন
+# পুরনো চ্যাট মেসেজগুলো স্ক্রিনে দেখানোর জন্য
 for idx, message in enumerate(st.session_state.messages):
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
@@ -60,12 +60,14 @@ for idx, message in enumerate(st.session_state.messages):
                     height=0
                 )
 
-# প্রশ্ন করার বক্স
+# প্রশ্ন করার বক্স (st.chat_input নিজে থেকেই রিস্টার্ট করে, আলাদা st.rerun() এর প্রয়োজন নেই)
 if prompt := st.chat_input("যেকোনো প্রশ্ন বা কথা এখানে লিখুন..."):
+    # ইউজারের মেসেজ সেশন স্টেটে যোগ করা
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
+    # অ্যাসিস্ট্যান্টের উত্তর জেনারেট করা
     with st.chat_message("assistant"):
         with st.spinner("ভেবে উত্তর তৈরি করছি..."):
             try:
@@ -83,7 +85,8 @@ if prompt := st.chat_input("যেকোনো প্রশ্ন বা কথ�
                 )
                 response_text = chat_completion.choices[0].message.content
                 st.markdown(response_text)
+                
+                # অ্যাসিস্ট্যান্টের উত্তর সেশন স্টেটে যোগ করা
                 st.session_state.messages.append({"role": "assistant", "content": response_text})
-                st.rerun()
             except Exception as e:
                 st.error(f"ত্রুটি: {e}")
