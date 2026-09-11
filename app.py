@@ -8,6 +8,18 @@ st.title("⚡ ViralHook AI")
 st.caption("Reels & Shorts Viral Hook + Script Generator")
 
 api_key = st.sidebar.text_input("Groq API Key", type="password")
+
+# সক্রিয় মডেলগুলোর তালিকা
+selected_model = st.sidebar.selectbox(
+    "AI Model বেছে নিন:",
+    [
+        "llama-3.3-70b-versatile",
+        "llama-3.2-3b-preview",
+        "llama-3.2-11b-vision-preview",
+        "deepseek-r1-distill-llama-70b"
+    ]
+)
+
 topic = st.text_area("ভিডিওর বিষয় বা টপিক লিখুন:", placeholder="যেমন: ফেসবুক থেকে টাকা আয় করার ৩টি সহজ উপায়...")
 
 if st.button("Generate Viral Pack"):
@@ -29,7 +41,7 @@ if st.button("Generate Viral Pack"):
                 Topic: {topic}
                 """
                 completion = client.chat.completions.create(
-                    model="gemma2-9b-it",
+                    model=selected_model,
                     messages=[{"role": "user", "content": prompt}],
                     temperature=0.7,
                 )
