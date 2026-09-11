@@ -1,4 +1,3 @@
-
 import streamlit as st
 from groq import Groq
 
@@ -9,26 +8,18 @@ st.caption("Reels & Shorts Viral Hook + Script Generator")
 
 api_key = st.sidebar.text_input("Groq API Key", type="password")
 
-# সক্রিয় মডেলগুলোর তালিকা  
-selected_model = st.sidebar.selectbox(
-    "AI Model বেছে নিন:",
-    [
-        "llama-3.1-8b-instant",
-        "llama-3.3-70b-versatile"
-    ]
-)
-
-
-topic = st.text_area("ভিডিওর বিষয় বা টপিক লিখুন:", placeholder="যেমন: ফেসবুক থেকে টাকা আয় করার ৩টি সহজ উপায়...")
+topic = st.text_area("ভিডিওর বিষয় বা টপিক লিখুন:", placeholder="যেমন: ফেসবুক থেকে টাকা আয় করার ৩টি সহজ উপায়...")
 
 if st.button("Generate Viral Pack"):
     if not api_key:
-        st.error("দয়া করে বামপাশের মেনু থেকে আপনার Groq API Key দিন!")
+        st.error("দয়া করে সাইডবার থেকে আপনার Groq API Key দিন!")
     elif not topic:
-        st.warning("দয়া করে কোনো টপিক লিখুন।")
+        st.warning("দয়া করে কোনো টপিক লিখুন!")
     else:
         try:
-            client = Groq(api_key=api_key)
+            clean_key = api_key.strip()
+            client = Groq(api_key=clean_key)
+
             with st.spinner("AI স্ক্রিপ্ট তৈরি করছে..."):
                 prompt = f"""
                 You are an expert viral social media scriptwriter. Write in Bengali.
@@ -40,10 +31,11 @@ if st.button("Generate Viral Pack"):
                 Topic: {topic}
                 """
                 completion = client.chat.completions.create(
-                    model=selected_model,
+                    model="llama3-70b-8192",
                     messages=[{"role": "user", "content": prompt}],
                     temperature=0.7,
                 )
+
                 st.success("তৈরি সম্পন্ন হয়েছে!")
                 st.markdown(completion.choices[0].message.content)
         except Exception as e:
