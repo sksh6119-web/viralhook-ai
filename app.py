@@ -1,10 +1,11 @@
 import streamlit as st
 import streamlit.components.v1 as components
+from groq import Groq
 
 st.set_page_config(page_title="AI Assistant", page_icon="🤖", layout="centered")
 
 st.title("🤖 AI অ্যাসিস্ট্যান্ট")
-st.caption("আপনার যেকোনো প্রশ্ন লিখুন, নিচে উত্তর পাবেন।")
+st.caption("আপনার যেকোনো কথা লিখুন, বুদ্ধিমান AI সাথে সাথে উত্তর দেবে।")
 
 # Adsterra বিজ্ঞাপনের বাটন
 ad_link = "https://www.profitableratecpmnetwork.com/h7ssyv17p?key=eb8a14de90b0395f65ebf374d7d4ca71"
@@ -31,30 +32,15 @@ st.markdown(
 )
 
 # চ্যাট হিস্ট্রি
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-def get_smart_reply(text):
-    text_clean = text.lower().strip()
-    if any(w in text_clean for w in ["কেমন আছো", "কেমন আছেন", "how are you"]):
-        return "আমি খুব ভালো আছি! আপনি কেমন আছেন? আপনাকে কীভাবে সাহায্য করতে পারি বলুন।"
-    elif any(w in text_clean for w in ["হাই", "হ্যালো", "নমস্কার", "সালাম", "hello", "hi"]):
-        return "নমস্কার! বলুন, আজ আপনাকে কীভাবে সাহায্য করব?"
-    elif any(w in text_clean for w in ["নাম কি", "তোমার নাম", "who are you"]):
-        return "আমি একটি কৃত্রিম বুদ্ধিমত্তা চালিত স্মার্ট চ্যাটবট। আপনার প্রশ্নের উত্তর দিতে এখানে আছি।"
-    elif any(w in text_clean for w in ["রাজনীতি", "রাজনীতির অবস্থা"]):
-        return "রাজনীতি সবসময়ই পরিবর্তনশীল ও গতিশীল একটি ক্ষেত্র। আপনি নির্দিষ্ট কোন বিষয়ে জানতে চান বলুন।"
-    elif any(w in text_clean for w in ["ধন্যবাদ", "thanks", "thank you"]):
-        return "আপনাকে অনেক ধন্যবাদ! আরো কিছু জানতে চাইলে স্বচ্ছন্দে বলুন।"
-    else:
-        return f"আমি আপনার বিষয়টি বুঝতে পেরেছি। '{text}' সম্পর্কিত আরও তথ্য জানতে আপনার প্রশ্নটি বিস্তারিত লিখুন।"
-
-# চ্যাট হিস্ট্রি ও স্পিকার বাটন দেখানো
-for idx, chat in enumerate(st.session_state.chat_history):
-    with st.chat_message(chat["role"]):
-        st.markdown(chat["content"])
-        if chat["role"] == "assistant":
-            clean_voice = chat["content"].replace('"', '').replace("'", "").replace("\n", " ")
+# মেসেজ এবং মুখে শোনার বাটন দেখানো
+for idx, message in enumerate(st.session_state.messages):
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+        if message["role"] == "assistant":
+            clean_voice = message["content"].replace('"', '').replace("'", "").replace("\n", " ")
             if st.button("🔊 মুখে শুনুন", key=f"speak_{idx}"):
                 components.html(
                     f"""
@@ -71,9 +57,31 @@ for idx, chat in enumerate(st.session_state.chat_history):
                     height=0
                 )
 
-# ইউজার ইনপুট
-if user_prompt := st.chat_input("কী জানতে চান? এখানে লিখুন..."):
-    st.session_state.chat_history.append({"role": "user", "content": user_prompt})
-    ai_reply = get_smart_reply(user_prompt)
-    st.session_state.chat_history.append({"role": "assistant", "content": ai_reply})
-    st.rerun()
+# সাইডবারে অথবা ব্যাকএন্ডে Groq API Key
+# আপনার Groq API Key থাকলে সরাসরি নিচের ডাবল কোটেশনের মধ্যে বসাতে পারেন:
+GROQ_API_KEY = st.secrets.get("GROQ_API_KEY", "gsk_yousetupkeyhere")
+
+# চ্যাট ইনপুট
+if prompt := st.chat_input("কী জানতে চান? এখানে লিখুন..."):
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    with st.chat_message("assistant"):
+        try:
+            client = Groq(api_key=GROQ_API_KEY)
+            
+            chat_completion = client.chat.completions.create(
+                messages=[
+                    {"role": "system", "content": "You are an intelligent, friendly AI assistant. Answer the user clearly, naturally, and warmly in Bengali."},
+                    *[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages]
+                ],
+                model="llama-3.3-70b-versatile",
+            )
+            
+            response_text = chat_completion.choices[0].message.content
+            st.markdown(response_text)
+            st.session_state.messages.append({"role": "assistant", "content": response_text})
+            st.rerun()
+        except Exception as e:
+            st.error("AI ব্রেন কানেক্ট করতে আপনার একটি বিনামূল্যে Groq API Key প্রয়োজন।")
