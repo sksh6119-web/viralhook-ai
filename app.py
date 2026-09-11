@@ -1,147 +1,149 @@
 import streamlit as st
-import streamlit.components.v1 as components
+from gtts import gTTS
+import io
 
-st.set_page_config(page_title="ViralHook Flash", page_icon="⚡", layout="centered", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="Gemini Flash", layout="centered", initial_sidebar_state="collapsed")
 
-# জেমিনাই ইন্টারফেস ও ভয়েস স্ক্রিপ্ট
+# বড় টেক্সট ও ফুলস্ক্রিন ক্লিন মোবাইল ইন্টারফেস
 st.markdown("""
 <style>
     .block-container {
         padding-top: 1rem !important;
         padding-bottom: 7rem !important;
-        max-width: 650px !important;
+        max-width: 100% !important;
     }
     header, footer { visibility: hidden !important; }
 
-    /* টপ হেডার বার */
+    /* টপ বার */
     .top-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         padding: 5px 0 15px 0;
-        border-bottom: 1px solid rgba(128,128,128,0.15);
     }
-    .model-title {
-        font-size: 1.15rem;
+    .model-name {
+        font-size: 1.35rem;
         font-weight: 600;
+        color: #1f1f1f;
         display: flex;
         align-items: center;
         gap: 6px;
     }
-    .model-dot {
+    .dot {
         width: 8px;
         height: 8px;
         background-color: #1a73e8;
         border-radius: 50%;
         display: inline-block;
     }
+    .play-circle {
+        background-color: #a8c7fa;
+        color: #041e49;
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        margin-left: auto;
+    }
 
-    /* ইউজার মেসেজ বাবল */
-    .user-bubble-container {
+    /* বড় ফন্টের ইউজার মেসেজ বাবল */
+    .user-box {
         display: flex;
         justify-content: flex-end;
-        margin: 15px 0;
+        margin: 20px 0;
     }
     .user-bubble {
         background-color: #f0f4f9;
         color: #1f1f1f;
-        padding: 12px 20px;
-        border-radius: 22px;
-        max-width: 82%;
-        font-size: 0.98rem;
+        padding: 16px 22px;
+        border-radius: 26px;
+        max-width: 88%;
+        font-size: 1.25rem;
         line-height: 1.5;
-    }
-    @media (prefers-color-scheme: dark) {
-        .user-bubble {
-            background-color: #282a2c;
-            color: #e3e3e3;
-        }
+        font-weight: 500;
     }
 
-    /* এআই রেসপন্স বাবল */
-    .bot-container {
+    /* বড় ফন্টের এআই উত্তর বাবল */
+    .bot-box {
         display: flex;
         align-items: flex-start;
-        gap: 12px;
-        margin: 15px 0 25px 0;
+        gap: 14px;
+        margin: 20px 0;
     }
-    .bot-sparkle {
-        font-size: 1.2rem;
+    .bot-icon {
+        font-size: 1.5rem;
+        color: #1f1f1f;
         margin-top: 2px;
     }
-    .bot-content {
-        flex: 1;
-        font-size: 0.98rem;
+    .bot-msg {
+        font-size: 1.25rem;
         line-height: 1.6;
+        color: #1f1f1f;
+        flex: 1;
+        font-weight: 450;
+    }
+
+    /* নিচে জেমিনাই স্টাইল সার্চ বার */
+    div[data-testid="stChatInput"] {
+        border-radius: 35px !important;
+        background-color: #f0f4f9 !important;
+        border: 1px solid #e0e3e7 !important;
+        padding: 6px 14px !important;
+    }
+    div[data-testid="stChatInput"] textarea {
+        font-size: 1.15rem !important;
+        color: #1f1f1f !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# হেডার সেকশন
-h_col1, h_col2, h_col3 = st.columns([1, 5, 2])
-with h_col1:
-    st.markdown('<div style="font-size:1.3rem; cursor:pointer;">☰</div>', unsafe_allow_html=True)
-with h_col2:
-    st.markdown('<div class="model-title">ViralHook Flash <span class="model-dot"></span></div>', unsafe_allow_html=True)
-with h_col3:
-    col_play, col_new = st.columns(2)
-    with col_play:
-        # নীল রঙের গোল পজ/স্টপ বাটন
-        st.button("⏸", key="pause_btn", help="ভয়েস বন্ধ করুন")
-    with col_new:
-        if st.button("✏️", key="new_chat_btn", help="নতুন চ্যাট"):
-            st.session_state.messages = []
-            st.rerun()
+# হেডার
+h1, h2, h3 = st.columns([1, 6, 2])
+with h1:
+    st.markdown('<span style="font-size: 1.5rem; cursor:pointer;">☰</span>', unsafe_allow_html=True)
+with h2:
+    st.markdown('<div class="model-name">Gemini Flash <span class="dot"></span></div>', unsafe_allow_html=True)
+with h3:
+    st.markdown('<div class="play-circle">▶</div>', unsafe_allow_html=True)
 
-# মেসেজ হিস্ট্রি
-if "messages" not in st.session_state or len(st.session_state.messages) == 0:
-    st.session_state.messages = [
-        {"role": "assistant", "content": "আমি আপনার ভাইরাল হুক সহকারী। আপনার বিষয় নিচে মুখে বলুন অথবা লিখে পাঠান!"}
-    ]
+# চ্যাট হিস্ট্রি
+if "history" not in st.session_state:
+    st.session_state.history = []
 
-# মেসেজগুলো স্ক্রিনে দেখানো
-for msg in st.session_state.messages:
-    if msg["role"] == "user":
-        st.markdown(f'''
-        <div class="user-bubble-container">
-            <div class="user-bubble">{msg["content"]}</div>
-        </div>
-        ''', unsafe_allow_html=True)
+# মেসেজ ও ভয়েস প্রদর্শন
+for chat in st.session_state.history:
+    if chat["role"] == "user":
+        st.markdown(f'<div class="user-box"><div class="user-bubble">{chat["text"]}</div></div>', unsafe_allow_html=True)
     else:
-        st.markdown(f'''
-        <div class="bot-container">
-            <div class="bot-sparkle">✦</div>
-            <div class="bot-content">{msg["content"]}</div>
-        </div>
-        ''', unsafe_allow_html=True)
+        st.markdown(f'<div class="bot-box"><div class="bot-icon">✦</div><div class="bot-msg">{chat["text"]}</div></div>', unsafe_allow_html=True)
+        if "audio" in chat:
+            st.audio(chat["audio"], format="audio/mp3")
 
-# ভয়েস দিয়ে উত্তর শোনানোর জাভাস্ক্রিপ্ট প্লেয়ার
-def speak_bengali_text(text_to_speak):
-    clean_text = text_to_speak.replace('"', '').replace("'", "").replace("\n", " ")
-    components.html(f"""
-    <script>
-        if ('speechSynthesis' in window) {{
-            window.speechSynthesis.cancel();
-            let utterance = new SpeechSynthesisUtterance("{clean_text}");
-            utterance.lang = "bn-IN";
-            utterance.rate = 1.0;
-            utterance.pitch = 1.0;
-            window.speechSynthesis.speak(utterance);
-        }}
-    </script>
-    """, height=0)
+# ভয়েস রেকর্ড বাটন (মাইক)
+voice_input = st.audio_input("মাইকে কথা বলতে ট্যাপ করুন")
 
-# নিচে ইনপুট বার (মাইক আইকন এবং সেন্ড অপশন সহ)
-user_prompt = st.chat_input("Gemini-কে প্রশ্ন করুন... 🎙️")
+# টেক্সট লেখার ইনপুট বার
+prompt = st.chat_input("Gemini-কে প্রশ্ন করুন...")
 
-if user_prompt:
-    st.session_state.messages.append({"role": "user", "content": user_prompt})
+active_text = prompt or ("ভয়েস মেসেজ পাঠানো হয়েছে" if voice_input else None)
+
+if active_text:
+    st.session_state.history.append({"role": "user", "text": active_text})
     
-    # এআই উত্তর জেনারেট
-    reply = f"""'{user_prompt}'-এর জন্য ভাইরাল হুক তৈরি করা হলো:
-1. প্রথম ৩ সেকেন্ডেই দর্শককে চমকে দেওয়ার মতো হুক লাইন।
-2. ভিডিওর শেষে এমন একটি প্রশ্ন ছুঁড়ে দিন যাতে কমেন্টে ঝড় ওঠে!"""
+    bot_reply = f"আমি আপনার কথা বুঝতে পেরেছি: '{active_text}'। আপনার জন্য সেরা ভাইরাল কনটেন্ট তৈরি হচ্ছে।"
     
-    st.session_state.messages.append({"role": "assistant", "content": reply})
-    speak_bengali_text(reply)
+    # ভয়েসে কথা বলার অডিও তৈরি
+    tts = gTTS(text=bot_reply, lang='bn', slow=False)
+    audio_fp = io.BytesIO()
+    tts.write_to_fp(audio_fp)
+    audio_fp.seek(0)
+    
+    st.session_state.history.append({
+        "role": "assistant",
+        "text": bot_reply,
+        "audio": audio_fp
+    })
     st.rerun()
