@@ -1,6 +1,4 @@
 import streamlit as st
-
-
 from groq import Groq
 
 st.set_page_config(page_title="ViralHook AI", page_icon="⚡", layout="centered")
@@ -30,9 +28,7 @@ if st.button("Generate Viral Pack"):
                 Topic: {topic}
                 """
                 completion = client.chat.completions.create(
-                    model="llama-3.3-70b-versatile",
-
-
+                    model="llama3-70b-8192",
                     messages=[{"role": "user", "content": prompt}],
                     temperature=0.7,
                 )
