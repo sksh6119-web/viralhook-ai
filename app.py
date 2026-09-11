@@ -1,144 +1,70 @@
 import streamlit as st
-import streamlit.components.v1 as components
+import requests
+import urllib.parse
 
-st.set_page_config(page_title="Gemini Flash", layout="centered", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="AI Chat Assistant", page_icon="🤖", layout="centered")
 
-# বড় টেক্সট ও ক্লিন জেমিনাই ইন্টারফেস
-st.markdown("""
-<style>
-    .block-container {
-        padding-top: 1rem !important;
-        padding-bottom: 7rem !important;
-        max-width: 100% !important;
-    }
-    header, footer { visibility: hidden !important; }
+st.title("🤖 AI অ্যাসিস্ট্যান্ট")
+st.caption("আপনার যেকোনো প্রশ্ন লিখুন, সাথে সাথে বুদ্ধিমান উত্তর পেয়ে যাবেন।")
 
-    /* টপ বার */
-    .top-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 5px 0 15px 0;
-    }
-    .model-name {
-        font-size: 1.35rem;
-        font-weight: 600;
-        color: #1f1f1f;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-    .dot {
-        width: 8px;
-        height: 8px;
-        background-color: #1a73e8;
-        border-radius: 50%;
-        display: inline-block;
-    }
-    .play-circle {
-        background-color: #a8c7fa;
-        color: #041e49;
-        width: 44px;
-        height: 44px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.3rem;
-        margin-left: auto;
-    }
-
-    /* বড় ফন্টের ইউজার মেসেজ বাবল */
-    .user-box {
-        display: flex;
-        justify-content: flex-end;
-        margin: 20px 0;
-    }
-    .user-bubble {
-        background-color: #f0f4f9;
-        color: #1f1f1f;
-        padding: 14px 20px;
-        border-radius: 24px;
-        max-width: 85%;
-        font-size: 1.2rem;
-        line-height: 1.5;
-    }
-
-    /* বড় ফন্টের এআই উত্তর বাবল */
-    .bot-box {
-        display: flex;
-        align-items: flex-start;
-        gap: 12px;
-        margin: 15px 0;
-    }
-    .bot-icon {
-        font-size: 1.4rem;
-        color: #1f1f1f;
-        margin-top: 2px;
-    }
-    .bot-msg {
-        font-size: 1.2rem;
-        line-height: 1.6;
-        color: #1f1f1f;
-        flex: 1;
-    }
-
-    /* নিচে জেমিনাই স্টাইল সার্চ বার */
-    div[data-testid="stChatInput"] {
-        border-radius: 35px !important;
-        background-color: #f0f4f9 !important;
-        border: 1px solid #e0e3e7 !important;
-        padding: 4px 12px !important;
-    }
-    div[data-testid="stChatInput"] textarea {
-        font-size: 1.15rem !important;
-        color: #1f1f1f !important;
-    }
-</style>
-""", unsafe_allow_html=True)
-
-# শীর্ষভাগ
-h1, h2, h3 = st.columns([1, 6, 2])
-with h1:
-    st.markdown('<span style="font-size: 1.4rem; cursor:pointer;">☰</span>', unsafe_allow_html=True)
-with h2:
-    st.markdown('<div class="model-name">Gemini Flash <span class="dot"></span></div>', unsafe_allow_html=True)
-with h3:
-    st.markdown('<div class="play-circle">▶</div>', unsafe_allow_html=True)
+# Adsterra বিজ্ঞাপনের বাটন
+ad_link = "https://www.profitableratecpmnetwork.com/h7ssyv17p?key=eb8a14de90b0395f65ebf374d7d4ca71"
+st.markdown(
+    f"""
+    <div style="text-align: center; margin: 15px 0;">
+        <a href="{ad_link}" target="_blank" style="text-decoration: none;">
+            <button style="
+                background: linear-gradient(90deg, #ff4b4b, #ff7676);
+                color: white;
+                padding: 12px 24px;
+                border: none;
+                border-radius: 8px;
+                font-size: 16px;
+                font-weight: bold;
+                cursor: pointer;
+            ">
+                🎁 Support Us / Check Offer
+            </button>
+        </a>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
 # চ্যাট হিস্ট্রি
-if "history" not in st.session_state:
-    st.session_state.history = []
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []
 
-# মেসেজগুলো এবং স্পিকার বাটন দেখানো
-for idx, chat in enumerate(st.session_state.history):
-    if chat["role"] == "user":
-        st.markdown(f'<div class="user-box"><div class="user-bubble">{chat["text"]}</div></div>', unsafe_allow_html=True)
-    else:
-        st.markdown(f'<div class="bot-box"><div class="bot-icon">✦</div><div class="bot-msg">{chat["text"]}</div></div>', unsafe_allow_html=True)
-        # প্রতিটি উত্তরের নিচে স্পষ্ট স্পিকার বাটন
-        clean_voice = chat["text"].replace('"', '').replace("'", "").replace("\n", " ")
-        btn_col, _ = st.columns([2, 5])
-        with btn_col:
-            if st.button(f"🔊 মুখে শুনুন", key=f"speak_{idx}"):
-                components.html(f"""
-                <script>
-                    if ('speechSynthesis' in window) {{
-                        window.speechSynthesis.cancel();
-                        let msg = new SpeechSynthesisUtterance("{clean_voice}");
-                        msg.lang = 'bn-IN';
-                        msg.rate = 1.0;
-                        window.speechSynthesis.speak(msg);
-                    }}
-                </script>
-                """, height=0)
+# পূর্বের কথোপকথন দেখানো
+for chat in st.session_state.chat_history:
+    with st.chat_message(chat["role"]):
+        st.markdown(chat["content"])
 
-# নিচে জেমিনাই ইনপুট বার
-prompt = st.chat_input("Gemini-কে প্রশ্ন করুন...")
+# প্রশ্ন করার বক্স
+if user_prompt := st.chat_input("কী জানতে চান? এখানে লিখুন..."):
+    # ইউজারের মেসেজ যোগ করা
+    st.session_state.chat_history.append({"role": "user", "content": user_prompt})
+    with st.chat_message("user"):
+        st.markdown(user_prompt)
 
-if prompt:
-    st.session_state.history.append({"role": "user", "text": prompt})
-    bot_reply = f"আমি আপনার কথা বুঝতে পেরেছি: '{prompt}'। আপনার জন্য ভাইরাল কনটেন্ট তৈরি করা হলো!"
-    st.session_state.history.append({"role": "assistant", "text": bot_reply})
-    st.rerun()
-st.markdown("""<div style="text-align: center; margin: 20px 0;"><a href="https://www.profitableratecpmnetwork.com/h7ssyv17p?key=eb8a14de90b0395f65ebf374d7d4ca71" target="_blank"><button style="background: linear-gradient(90deg, #ff4b4b, #ff7676); color: white; padding: 12px 24px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer;">🎁 Support Us / Check Offer</button></a></div>""", unsafe_allow_html=True)
+    # আসল AI দিয়ে উত্তর আনা
+    with st.chat_message("assistant"):
+        with st.spinner("চিন্তাভাবনা করছি..."):
+            try:
+                system_instruction = "You are a helpful, smart AI assistant. Answer clearly and politely in Bengali."
+                full_query = f"{system_instruction}\nUser: {user_prompt}"
+                encoded_prompt = urllib.parse.quote(full_query)
+                
+                # আসল AI API কল
+                api_url = f"https://text.pollinations.ai/{encoded_prompt}?model=openai"
+                response = requests.get(api_url, timeout=30)
+                
+                if response.status_code == 200:
+                    ai_reply = response.text
+                else:
+                    ai_reply = "দুঃখিত, এই মুহূর্তে উত্তর তৈরিতে সমস্যা হচ্ছে। আবার চেষ্টা করুন।"
+            except Exception:
+                ai_reply = "নেটওয়ার্ক সমস্যার কারণে উত্তর পাওয়া যায়নি। একটু পর আবার চেষ্টা করুন।"
+
+            st.markdown(ai_reply)
+            st.session_state.chat_history.append({"role": "assistant", "content": ai_reply})
