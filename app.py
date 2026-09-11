@@ -20,6 +20,11 @@ if st.button("Generate Viral Pack"):
             clean_key = api_key.strip()
             client = Groq(api_key=clean_key)
 
+            # Groq এর সার্ভার থেকে বর্তমানে চালু থাকা টেক্সট মডেল স্বয়ংক্রিয়ভাবে নেওয়া
+            models_list = client.models.list().data
+            valid_models = [m.id for m in models_list if "whisper" not in m.id and "vision" not in m.id]
+            active_model = valid_models[0]
+
             with st.spinner("AI স্ক্রিপ্ট তৈরি করছে..."):
                 prompt = f"""
                 You are an expert viral social media scriptwriter. Write in Bengali.
@@ -31,7 +36,7 @@ if st.button("Generate Viral Pack"):
                 Topic: {topic}
                 """
                 completion = client.chat.completions.create(
-                    model="llama3-70b-8192",
+                    model=active_model,
                     messages=[{"role": "user", "content": prompt}],
                     temperature=0.7,
                 )
