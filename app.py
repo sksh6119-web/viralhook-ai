@@ -7,11 +7,11 @@ st.set_page_config(page_title="AI Assistant", page_icon="🤖", layout="centered
 st.title("🤖 AI অ্যাসিস্ট্যান্ট")
 st.caption("আপনার যেকোনো কথা বা প্রশ্ন লিখুন, বুদ্ধিমান AI সাথে সাথে সবকিছুর উত্তর দেবে।")
 
+# Adsterra বিজ্ঞাপনের বাটন (Safe String Format)
 ad_link = "https://www.profitableratecpmnetwork.com/h7ssyv17p?key=eb8a14de90b0395f65ebf374d7d4ca71"
-st.markdown(
-    f"""
+button_html = """
     <div style="text-align: center; margin: 15px 0;">
-        <a href="{ad_link}" target="_blank" style="text-decoration: none;">
+        <a href="{}" target="_blank" style="text-decoration: none;">
             <button style="
                 background: linear-gradient(90deg, #ff4b4b, #ff7676);
                 color: white;
@@ -26,37 +26,37 @@ st.markdown(
             </button>
         </a>
     </div>
-    """,
-    unsafe_allow_html=True
-)
+"""
+st.markdown(button_html.format(ad_link), unsafe_allow_html=True)
 
+# আপনার ফিক্সড Groq API Key
 GROQ_API_KEY = "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"
 client = Groq(api_key=GROQ_API_KEY)
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+# চ্যাট মেসেজ এবং স্পষ্ট ভয়েস বাটন
 for idx, message in enumerate(st.session_state.messages):
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
         if message["role"] == "assistant":
             clean_voice = message["content"].replace('"', '').replace("'", "").replace("\n", " ")
             if st.button("🔊 মুখে শুনুন", key=f"speak_{idx}"):
-                components.html(
-                    f"""
+                js_code = """
                     <script>
-                        if ('speechSynthesis' in window) {{
+                        if ('speechSynthesis' in window) {
                             window.speechSynthesis.cancel();
-                            let msg = new SpeechSynthesisUtterance("{clean_voice}");
+                            let msg = new SpeechSynthesisUtterance("{}");
                             msg.lang = 'bn-IN';
                             msg.rate = 1.0;
                             window.speechSynthesis.speak(msg);
-                        }}
+                        }
                     </script>
-                    """,
-                    height=0
-                )
+                """
+                components.html(js_code.format(clean_voice), height=0)
 
+# প্রশ্ন করার বক্স
 if prompt := st.chat_input("যেকোনো প্রশ্ন বা কথা এখানে লিখুন..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
