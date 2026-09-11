@@ -78,11 +78,9 @@ if st.button("🚀 উত্তর দিন ও লাইভ কথা বল�
                 answer = completion.choices[0].message.content
                 st.markdown(answer)
 
-                # লাইভ কথা বলার জন্য টেক্সট রেডি করা
                 clean_text = answer.replace("*", "").replace("#", "").replace("\n", " ")[:350]
                 speech_text_json = json.dumps(clean_text)
 
-                # ব্রাউজারের লাইভ ভয়েস ইঞ্জিন (Instant Speech Synthesis)
                 st.components.v1.html(f"""
                 <script>
                     const text = {speech_text_json};
