@@ -15,7 +15,7 @@ if "messages" not in st.session_state:
         {"role": "system", "content": "You are a supremely knowledgeable, wise, and incredibly friendly AI companion. You have access to all information in the universe and can answer any question accurately and instantly. Always use extremely polite, decent, respectful, and sweet language in Bengali. Never use any harsh, inappropriate, or bad words. When greeted like 'Hi' or 'Hello', warmly and affectionately ask how the user is doing, what's up, and offer a friendly chat just like a caring best friend."}
     ]
 
-# প্রিমিয়াম ডিজাইন ও ফ্লোটিং ইনপুট বক্সের জন্য CSS
+# জেমিনির মতো প্রিমিয়াম লুক এবং ফ্লোটিং ইনপুট বক্সের জন্য CSS
 st.markdown("""
     <style>
     #MainMenu {visibility: hidden;}
@@ -82,7 +82,7 @@ st.markdown(f"""
     </a>
 """, unsafe_allow_html=True)
 
-# চ্যাট হিস্ট্রি এবং এআই উত্তরের নিচে ভয়েস প্লে ও অন্যান্য টুলবার
+# চ্যাট হিস্ট্রি এবং এআই উত্তরের নিচে নিখুঁত ভয়েস ও টুলবার সিস্টেম
 for i, message in enumerate(st.session_state.messages):
     if message["role"] != "system":
         with st.chat_message(message["role"]):
@@ -92,18 +92,17 @@ for i, message in enumerate(st.session_state.messages):
                 safe_text = json.dumps(message["content"])
                 selected_voice_filter = "female" if voice_gender == "Female" else "male"
                 
-                # ভয়েস টগল ও রিডিং বার
                 gemini_toolbar_html = f"""
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; border-top: 1px solid #f1f3f4; padding-top: 10px;">
                     <div style="display: flex; align-items: center; gap: 16px;">
                         <span title="লাইক" style="cursor: pointer; font-size: 16px;" onclick="alert('ধন্যবাদ!')">👍</span>
                         <span title="ডিসলাইক" style="cursor: pointer; font-size: 16px;" onclick="alert('ধন্যবাদ!')">👎</span>
                         <span title="পুনরায় লিখুন" style="cursor: pointer; font-size: 16px;" onclick="location.reload();">🔄</span>
-                        <span title="কপি করুন" style="cursor: pointer; font-size: 16px;" onclick="navigator.clipboard.writeText({safe_text}); alert('লেখা কপি করা হয়েছে!');">📋</span>
+                        <span title="কপি করুন" style="cursor: pointer; font-size: 16px;" onclick="navigator.clipboard.writeText({safe_text}); alert('টেক্সট কপি করা হয়েছে!');">📋</span>
                     </div>
                     
                     <div>
-                        <button id="speaker_btn_{i}" title="শুহন বা বন্ধ করুন" onclick="toggleSpeech_{i}()" style="background: #e8f0fe; border: 1px solid #d2e3fc; border-radius: 20px; padding: 6px 14px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; color: #1a73e8;">
+                        <button id="speaker_btn_{i}" title="ভয়েস শুনুন বা বন্ধ করুন" onclick="toggleSpeech_{i}()" style="background: #e8f0fe; border: 1px solid #d2e3fc; border-radius: 20px; padding: 6px 14px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; color: #1a73e8;">
                             🔊 ভয়েস শুনুন
                         </button>
                     </div>
@@ -113,7 +112,7 @@ for i, message in enumerate(st.session_state.messages):
                 var isSpeaking_{i} = false;
                 function toggleSpeech_{i}() {{
                     if (!('speechSynthesis' in window)) {{
-                        alert('আপনার ব্রাউজার ভয়েস সাপোর্ট করে না।');
+                        alert('আপনার ব্রাউজার ভয়েস সাপোর্ট করছে না।');
                         return;
                     }}
                     
