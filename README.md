@@ -1,42 +1,96 @@
 import streamlit as st
 from groq import Groq
 
-st.set_page_config(page_title="ViralHook AI", page_icon="⚡", layout="centered")
+# পেজ কনফিগারেশন
+st.set_page_config(
+    page_title="বুদ্ধিদীপ্ত এআই অ্যাসিস্ট্যান্ট",
+    page_icon="✨",
+    layout="centered"
+)
 
-st.title("⚡ ViralHook AI")
-st.caption("Reels & Shorts Viral Hook + Script Generator")
+# কাস্টম স্টাইল ও ডিজাইন
+st.markdown("""
+    <style>
+    .main-title {
+        text-align: center;
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-top: 10px;
+    }
+    .subtitle {
+        text-align: center;
+        font-size: 1rem;
+        color: #4b5563;
+        margin-bottom: 25px;
+    }
+    .support-btn {
+        display: block;
+        width: fit-content;
+        margin: 0 auto 30px auto;
+        padding: 10px 24px;
+        background-color: #ef4444;
+        color: white;
+        text-align: center;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+    }
+    .support-btn:hover {
+        background-color: #dc2626;
+        color: white;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
-api_key = st.sidebar.text_input("Groq API Key", type="password")
+# হেডার সেকশন
+st.markdown('<div class="main-title">✨ বুদ্ধিদীপ্ত এআই অ্যাসিস্ট্যান্ট</div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle">আপনার প্রতিটি কথা সুচারু ও নির্ভুলভাবে লিখে দেবো।</div>', unsafe_allow_html=True)
 
-topic = st.text_area("ভিডিওর বিষয় বা টপিক লিখুন:", placeholder="যেমন: ফেসবুক থেকে টাকা আয় করার ৩টি সহজ উপায়...")
+# সাপোর্ট বা অফার বাটন
+st.markdown('<a href="#" class="support-btn">🔥 Support Us / Check Offer</a>', unsafe_allow_html=True)
 
-if st.button("Generate Viral Pack"):
-    if not api_key:
-        st.error("দয়া করে সাইডবার থেকে আপনার Groq API Key দিন!")
-    elif not topic:
-        st.warning("দয়া করে কোনো টপিক লিখুন!")
-    else:
+st.divider()
+
+# Groq ক্লায়েন্ট ইনিশিয়ালাইজেশন (স্ট্রীমলিট সিক্রেট বা এনভায়রনমেন্ট থেকে এপিআই কি নেওয়া হবে)
+try:
+    groq_api_key = st.secrets["GROQ_API_KEY"]
+    client = Groq(api_key=groq_api_key)
+except Exception:
+    client = None
+    st.warning("দয়া করে Streamlit Secrets-এ আপনার GROQ_API_KEY যুক্ত করুন।")
+
+# চ্যাট হিস্ট্রি ধরে রাখার জন্য সেশন স্টেট
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+# পূর্বের চ্যাট মেসেজগুলো দেখানো
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+# ব্যবহারকারীর ইনপুট নেওয়া
+if prompt := st.chat_input("আপনার যেকোনো প্রশ্ন বা কথা এখানে লিখুন..."):
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    if client:
         try:
-            clean_key = api_key.strip()
-            client = Groq(api_key=clean_key)
-
-            with st.spinner("AI স্ক্রিপ্ট তৈরি করছে..."):
-                prompt = f"""
-                You are an expert viral social media scriptwriter. Write in Bengali.
-                Create:
-                1. Three scroll-stopping hooks.
-                2. A full 30-45 second short video script with visual/action cues.
-                3. One clickable thumbnail idea.
-
-                Topic: {topic}
-                """
-                completion = client.chat.completions.create(
-                    model="llama3-70b-8192",
-                    messages=[{"role": "user", "content": prompt}],
-                    temperature=0.7,
-                )
-
-                st.success("তৈরি সম্পন্ন হয়েছে!")
-                st.markdown(completion.choices[0].message.content)
+            # Groq মডেল থেকে রেসপন্স জেনারেট করা
+            chat_completion = client.chat.completions.create(
+                messages=[
+                    {"role": m["role"], "content": m["content"]}
+                    for m in st.session_state.messages
+                ],
+                model="llama3-70b-8192", # অথবা আপনার পছন্দের গ্রোক মডেল
+            )
+            response = chat_completion.choices[0].message.content
         except Exception as e:
-            st.error(f"Error: {e}")
+            response = f"দুঃখিত, একটি সমস্যা হয়েছে: {e}"
+    else:
+        response = f"আপনার কথাটি পেয়েছি: '{prompt}'। (এপিআই কি সেট করা নেই)"
+
+    st.session_state.messages.append({"role": "assistant", "content": response})
+    with st.chat_message("assistant"):
+        st.markdown(response)
