@@ -42,24 +42,20 @@ st.markdown("""
         line-height: 1.6;
     }
     
+    /* ইনপুট বক্স ফিক্সড এবং ভাসমান রাখার জন্য */
     .stChatInput {
         position: fixed !important;
-        bottom: 25px !important;
+        bottom: 20px !important;
         left: 50% !important;
         transform: translateX(-50%) !important;
-        width: 85% !important;
+        width: 90% !important;
         max-width: 800px !important;
-        background: #ffffff !important;
-        border-radius: 32px !important;
-        padding: 6px 16px !important;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.08) !important;
-        border: 1px solid #dadce0 !important;
         z-index: 99999 !important;
     }
     
     .block-container {
         padding-top: 20px !important;
-        padding-bottom: 140px !important;
+        padding-bottom: 130px !important;
         max-width: 850px !important;
     }
     </style>
@@ -147,10 +143,9 @@ if prompt := st.chat_input("Gemini-কে কিছু জিজ্ঞাসা 
         with st.spinner("উত্তর তৈরি হচ্ছে..."):
             try:
                 res = client.chat.completions.create(
-                    model="openai/gpt-oss-20b",
+                    model="llama-3.3-70b-versatile",  # মডেলের নামটি আপনার আগের মতো ঠিক রাখা হয়েছে
                     messages=[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
-                    temperature=0.7,
-                    tool_choice="none"
+                    temperature=0.7
                 )
                 reply = res.choices[0].message.content
                 st.markdown(reply)
