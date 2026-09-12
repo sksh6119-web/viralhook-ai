@@ -10,13 +10,13 @@ except Exception as e:
     st.error(f"API Key error: {e}")
     st.stop()
 
-# ইউনিভার্সাল ভাষা ডিটেকশন সিস্টেম (যেই ভাষা, সেই ভাষায় উত্তর)
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "system", "content": "You are Gemini, an advanced and friendly AI assistant. Detect the language of the user's input automatically and always reply fluently in that exact same language (Bengali, Hindi, English, Spanish, etc.). Be polite, accurate, and helpful."},
-        {"role": "assistant", "content": "নমস্কার! 😊 আমি আপনার জেমিনি সহকারী। আপনি বাংলা, হিন্দি, ইংরেজি বা যেকোনো ভাষায় কথা বলতে পারেন—আমি সেই ভাষাতেই উত্তর দেব এবং যারা পড়তে পারেন না, তারা নিচের '🔊 ভয়েস শুনুন' বাটনে ক্লিক করলেই শুনতে পাবেন। বলুন, কীভাবে সাহায্য করতে পারি?"}
+        {"role": "system", "content": "You are Gemini AI. Detect the user's language and reply in that exact language accurately and politely."},
+        {"role": "assistant", "content": "নমস্কার! 😊 আমি আপনার জেমিনি সহকারী। যারা পড়তে পারেন না, তারা নিচের '🔊 ভয়েস শুনুন' বাটনে ক্লিক করলেই আমি পুরো লেখাটি মুখে পড়ে শোনাবো। বলুন, আপনাকে কীভাবে সাহায্য করতে পারি?"}
     ]
 
+# CSS স্টাইলিং - কোনো কোড বা বক্সের ঝামেলা ছাড়াই নিখুঁত লেআউট
 st.markdown("""
     <style>
     #MainMenu {visibility: hidden;}
@@ -81,6 +81,7 @@ st.markdown(f"""
     </a>
 """, unsafe_allow_html=True)
 
+# চ্যাট হিস্ট্রি রেন্ডার করা এবং ব্রাউজার ভয়েস বাটন যুক্ত করা
 for i, message in enumerate(st.session_state.messages):
     if message["role"] != "system":
         with st.chat_message(message["role"]):
@@ -88,63 +89,51 @@ for i, message in enumerate(st.session_state.messages):
             
             if message["role"] == "assistant":
                 safe_text = json.dumps(message["content"])
-                selected_voice_filter = "female" if voice_gender == "Female" else "male"
+                selected_filter = "female" if voice_gender == "Female" else "male"
                 
-                voice_toolbar_html = f"""
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; border-top: 1px solid #f1f3f4; padding-top: 10px;">
-                    <div style="display: flex; align-items: center; gap: 16px;">
-                        <span title="লাইক" style="cursor: pointer; font-size: 16px;" onclick="alert('ধন্যবাদ!')">👍</span>
-                        <span title="ডিসলাইক" style="cursor: pointer; font-size: 16px;" onclick="alert('ধন্যবাদ!')">👎</span>
-                        <span title="পুনরায় লিখুন" style="cursor: pointer; font-size: 16px;" onclick="location.reload();">🔄</span>
-                        <span title="কপি করুন" style="cursor: pointer; font-size: 16px;" onclick="navigator.clipboard.writeText({safe_text}); alert('টেক্সট কপি করা হয়েছে!');">📋</span>
-                    </div>
-                    
-                    <div>
-                        <button id="speaker_btn_{i}" onclick="playAudio_{i}()" style="background: #e8f0fe; border: 1px solid #d2e3fc; border-radius: 20px; padding: 6px 14px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; color: #1a73e8;">
-                            🔊 ভয়েস শুনুন
-                        </button>
-                    </div>
+                # এমনভাবে স্ক্রিপ্টটি লেখা হয়েছে যাতে কোনো ট্যাগ বা কোড স্ক্রিনে ভেসে না ওঠে
+                speech_script = f"""
+                <div style="display: flex; justify-content: flex-end; margin-top: 12px; border-top: 1px solid #f1f3f4; padding-top: 8px;">
+                    <button id="audio_btn_{i}" onclick="playTTS_{i}()" style="background: #e8f0fe; border: 1px solid #d2e3fc; border-radius: 20px; padding: 6px 14px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; color: #1a73e8;">
+                        🔊 ভয়েস শুনুন
+                    </button>
                 </div>
-                
                 <script>
-                function playAudio_{i}() {{
+                function playTTS_{i}() {{
                     if (!('speechSynthesis' in window)) {{
-                        alert('আপনার ব্রাউজার ভয়েস সাপোর্ট করে না।');
+                        alert('ব্রাউজার ভয়েস সাপোর্ট করে না।');
                         return;
                     }}
                     window.speechSynthesis.cancel();
-                    var textToRead = {safe_text};
-                    var speech = new SpeechSynthesisUtterance(textToRead);
-                    speech.lang = 'bn-IN';
-                    speech.rate = 0.95;
-                    var voices = window.speechSynthesis.getVoices();
-                    for(var k = 0; k < voices.length; k++) {{
-                        if(voices[k].name.toLowerCase().includes('{selected_voice_filter}') || voices[k].lang.includes('bn')) {{
-                            speech.voice = voices[k];
+                    var textToSpeak = {safe_text};
+                    var utterance = new SpeechSynthesisUtterance(textToSpeak);
+                    utterance.lang = 'bn-IN';
+                    utterance.rate = 0.95;
+                    
+                    var availableVoices = window.speechSynthesis.getVoices();
+                    for(var v = 0; v < availableVoices.length; v++) {{
+                        if(availableVoices[v].name.toLowerCase().includes('{selected_filter}') || availableVoices[v].lang.includes('bn')) {{
+                            utterance.voice = availableVoices[v];
                             break;
                         }}
                     }}
-                    var btnElem = document.getElementById('speaker_btn_{i}');
-                    speech.onstart = function() {{
-                        btnElem.style.background = '#fce8e6';
-                        btnElem.style.color = '#c5221f';
-                        btnElem.innerHTML = '🔊 বলছি...';
+                    
+                    var buttonElem = document.getElementById('audio_btn_{i}');
+                    utterance.onstart = function() {{
+                        buttonElem.style.background = '#fce8e6';
+                        buttonElem.style.color = '#c5221f';
+                        buttonElem.innerHTML = '🔊 বলছি...';
                     }};
-                    speech.onend = function() {{
-                        btnElem.style.background = '#e8f0fe';
-                        btnElem.style.color = '#1a73e8';
-                        btnElem.innerHTML = '🔊 ভয়েস শুনুন';
+                    utterance.onend = function() {{
+                        buttonElem.style.background = '#e8f0fe';
+                        buttonElem.style.color = '#1a73e8';
+                        buttonElem.innerHTML = '🔊 ভয়েস শুনুন';
                     }};
-                    speech.onerror = function() {{
-                        btnElem.style.background = '#e8f0fe';
-                        btnElem.style.color = '#1a73e8';
-                        btnElem.innerHTML = '🔊 ভয়েস শুনুন';
-                    }};
-                    window.speechSynthesis.speak(speech);
+                    window.speechSynthesis.speak(utterance);
                 }}
                 </script>
                 """
-                st.markdown(voice_toolbar_html, unsafe_allow_html=True)
+                st.markdown(speech_script, unsafe_allow_html=True)
 
 if prompt := st.chat_input("Gemini-কে কিছু জিজ্ঞাসা করুন..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
