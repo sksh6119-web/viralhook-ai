@@ -15,7 +15,7 @@ if "messages" not in st.session_state:
         {"role": "system", "content": "You are a supremely knowledgeable, wise, and incredibly friendly AI companion. You have access to all information in the universe and can answer any question accurately and instantly. Always use extremely polite, decent, respectful, and sweet language in Bengali. Never use any harsh, inappropriate, or bad words. When greeted like 'Hi' or 'Hello', warmly and affectionately ask how the user is doing, what's up, and offer a friendly chat just like a caring best friend."}
     ]
 
-# প্রিমিয়াম ডিজাইন ও ফ্লোটিং ইনপুট বক্সের জন্য CSS (আইকন ডানপাশে সাজানোর জন্য)
+# প্রিমিয়াম ডিজাইন ও ফ্লোটিং ইনপুট বক্সের জন্য CSS
 st.markdown("""
     <style>
     #MainMenu {visibility: hidden;}
@@ -82,7 +82,7 @@ st.markdown(f"""
     </a>
 """, unsafe_allow_html=True)
 
-# চ্যাট হিস্ট্রি এবং এআই উত্তরের নিচে প্রফেশনাল SVG আইকন বার (ডানপাশে ফিক্সড)
+# চ্যাট হিস্ট্রি এবং এআই উত্তরের নিচে ভয়েস প্লে ও অন্যান্য টুলবার
 for i, message in enumerate(st.session_state.messages):
     if message["role"] != "system":
         with st.chat_message(message["role"]):
@@ -92,22 +92,19 @@ for i, message in enumerate(st.session_state.messages):
                 safe_text = json.dumps(message["content"])
                 selected_voice_filter = "female" if voice_gender == "Female" else "male"
                 
-                # আসল জেমিনির মতো অপশন বার যেখানে আইকনগুলোতে ক্লিক করলে কাজ হবে
+                # ভয়েস টগল ও রিডিং বার
                 gemini_toolbar_html = f"""
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; border-top: 1px solid #f1f3f4; padding-top: 10px;">
-                    <!-- বাম বা মাঝখানের অপশনগুলো -->
                     <div style="display: flex; align-items: center; gap: 16px;">
-                        <button title="লাইক" onclick="this.style.color='#1a73e8'; alert('ফিডব্যাকের জন্য ধন্যবাদ!');" style="background:none; border:none; cursor:pointer; font-size:16px; color:#5f6368;">👍</button>
-                        <button title="ডিসলাইক" onclick="this.style.color='#d93025'; alert('মতামত রেকর্ড করা হয়েছে!');" style="background:none; border:none; cursor:pointer; font-size:16px; color:#5f6368;">👎</button>
-                        <button title="পুনরায় লিখুন" onclick="location.reload();" style="background:none; border:none; cursor:pointer; font-size:16px; color:#5f6368;">🔄</button>
-                        <button title="শেয়ার করুন" onclick="navigator.clipboard.writeText({safe_text}); alert('টেক্সট কপি ও শেয়ারের জন্য প্রস্তুত!');" style="background:none; border:none; cursor:pointer; font-size:16px; color:#5f6368;">📤</button>
-                        <button title="কপি করুন" onclick="navigator.clipboard.writeText({safe_text}); alert('টেক্সট কপি করা হয়েছে!');" style="background:none; border:none; cursor:pointer; font-size:16px; color:#5f6368;">📋</button>
+                        <span title="লাইক" style="cursor: pointer; font-size: 16px;" onclick="alert('ধন্যবাদ!')">👍</span>
+                        <span title="ডিসলাইক" style="cursor: pointer; font-size: 16px;" onclick="alert('ধন্যবাদ!')">👎</span>
+                        <span title="পুনরায় লিখুন" style="cursor: pointer; font-size: 16px;" onclick="location.reload();">🔄</span>
+                        <span title="কপি করুন" style="cursor: pointer; font-size: 16px;" onclick="navigator.clipboard.writeText({safe_text}); alert('লেখা কপি করা হয়েছে!');">📋</span>
                     </div>
                     
-                    <!-- একদম ডানপাশের ভয়েস স্পিকার আইকন (ট্যাপ করলে বলবে ও বন্ধ হবে) -->
                     <div>
-                        <button id="speaker_btn_{i}" title="ভয়েস শুনুন / বন্ধ করুন" onclick="toggleSpeech_{i}()" style="background: #f1f3f4; border: none; border-radius: 50%; width: 38px; height: 38px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: 0.2s;">
-                            🔊
+                        <button id="speaker_btn_{i}" title="শুহন বা বন্ধ করুন" onclick="toggleSpeech_{i}()" style="background: #e8f0fe; border: 1px solid #d2e3fc; border-radius: 20px; padding: 6px 14px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; color: #1a73e8;">
+                            🔊 ভয়েস শুনুন
                         </button>
                     </div>
                 </div>
@@ -116,7 +113,7 @@ for i, message in enumerate(st.session_state.messages):
                 var isSpeaking_{i} = false;
                 function toggleSpeech_{i}() {{
                     if (!('speechSynthesis' in window)) {{
-                        alert('আপনার ব্রাউজার ভয়েস সাপোর্ট করছে না।');
+                        alert('আপনার ব্রাউজার ভয়েস সাপোর্ট করে না।');
                         return;
                     }}
                     
@@ -125,8 +122,9 @@ for i, message in enumerate(st.session_state.messages):
                     if (isSpeaking_{i}) {{
                         window.speechSynthesis.cancel();
                         isSpeaking_{i} = false;
-                        btn.style.background = '#f1f3f4';
-                        btn.innerHTML = '🔊';
+                        btn.style.background = '#e8f0fe';
+                        btn.style.color = '#1a73e8';
+                        btn.innerHTML = '🔊 ভয়েস শুনুন';
                     }} else {{
                         window.speechSynthesis.cancel();
                         var textToSpeak = {safe_text};
@@ -144,13 +142,15 @@ for i, message in enumerate(st.session_state.messages):
                         
                         msg.onend = function() {{
                             isSpeaking_{i} = false;
-                            btn.style.background = '#f1f3f4';
-                            btn.innerHTML = '🔊';
+                            btn.style.background = '#e8f0fe';
+                            btn.style.color = '#1a73e8';
+                            btn.innerHTML = '🔊 ভয়েস শুনুন';
                         }};
                         
                         isSpeaking_{i} = true;
-                        btn.style.background = '#e8f0fe';
-                        btn.innerHTML = '🔇';
+                        btn.style.background = '#fce8e6';
+                        btn.style.color = '#c5221f';
+                        btn.innerHTML = '🔇 বন্ধ করুন';
                         window.speechSynthesis.speak(msg);
                     }}
                 }}
@@ -165,7 +165,7 @@ if prompt := st.chat_input("Gemini-কে কিছু জিজ্ঞাসা 
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        with st.spinner("চিন্তা করছি..."):
+        with st.spinner("উত্তর তৈরি হচ্ছে..."):
             try:
                 res = client.chat.completions.create(
                     model="openai/gpt-oss-20b",
