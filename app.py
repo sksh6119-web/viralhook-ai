@@ -3,8 +3,8 @@ import urllib.request
 import json
 
 st.set_page_config(
-    page_title="Gemini-like AI Assistant",
-    page_icon="✨",
+    page_title="AI Assistant",
+    page_icon="🤖",
     layout="centered"
 )
 
@@ -18,7 +18,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.title("✨ AI Assistant")
+st.title("AI Assistant")
 st.write("আপনার যেকোনো প্রশ্ন বা স্ক্রিপ্ট এখানে দিন, আমি জেমিনির মতো সুন্দর ও সাবলীলভাবে উত্তর দেব।")
 
 try:
