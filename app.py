@@ -12,10 +12,7 @@ except Exception as e:
 
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {
-            "role": "system", 
-            "content": "You are Gemini, a friendly AI assistant. Answer any question about any country, topic, or language accurately. Always reply in the exact language the user asks."
-        }
+        {"role": "system", "content": "You are Gemini AI. Answer in the user's language accurately."}
     ]
 
 st.markdown("""
@@ -23,12 +20,7 @@ st.markdown("""
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
-    
-    .stApp {
-        background-color: #f0f4f9;
-        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    }
-    
+    .stApp { background-color: #f0f4f9; font-family: 'Segoe UI', sans-serif; }
     .stChatMessage {
         background-color: #ffffff !important;
         border-radius: 20px !important;
@@ -37,13 +29,7 @@ st.markdown("""
         box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         border: 1px solid #e1e6ed !important;
     }
-    
-    .stChatMessage p {
-        color: #1f1f1f !important;
-        font-size: 17px !important;
-        line-height: 1.6;
-    }
-    
+    .stChatMessage p { color: #1f1f1f !important; font-size: 17px !important; line-height: 1.6; }
     .stChatInput {
         position: fixed !important;
         bottom: 25px !important;
@@ -58,12 +44,7 @@ st.markdown("""
         border: 1px solid #dcdfe5 !important;
         z-index: 99999 !important;
     }
-    
-    .block-container {
-        padding-top: 20px !important;
-        padding-bottom: 150px !important;
-        max-width: 900px !important;
-    }
+    .block-container { padding-top: 20px !important; padding-bottom: 150px !important; max-width: 900px !important; }
     </style>
 """, unsafe_allow_html=True)
 
