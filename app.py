@@ -25,7 +25,7 @@ if prompt := st.chat_input("আপনার বার্তা লিখুন..
     with st.chat_message("assistant"):
         try:
             res = client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+                model="openai/gpt-oss-20b",
                 messages=[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages]
             )
             reply = res.choices[0].message.content
