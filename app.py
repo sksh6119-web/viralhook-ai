@@ -1,9 +1,6 @@
 import streamlit as st
-import os
-from groq import Groq
-
-# Force UTF-8 encoding environment to fix ascii codec errors
-os.environ["PYTHONIOENCODING"] = "utf-8"
+import requests
+import json
 
 st.set_page_config(
     page_title="AI Assistant",
@@ -14,13 +11,11 @@ st.set_page_config(
 st.title("✨ AI Assistant")
 st.write("Ask your questions below.")
 
-# Initialize Groq client safely from secrets
+# Get API key safely from Streamlit Secrets
 try:
     groq_api_key = st.secrets["GROQ_API_KEY"]
-    client = Groq(api_key=groq_api_key)
 except Exception:
-    client = None
-    st.error("Please configure your GROQ_API_KEY in Streamlit Secrets.")
+    groq_api_key = None
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -30,26 +25,42 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
 
 if prompt := st.chat_input("Type your message here..."):
-    # Ensure safe encoding for prompt
-    safe_prompt = str(prompt).encode("utf-8", errors="ignore").decode("utf-8")
-    st.session_state.messages.append({"role": "user", "content": safe_prompt})
+    st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
-        st.markdown(safe_prompt)
+        st.markdown(prompt)
 
-    if client:
+    if groq_api_key:
         try:
-            chat_completion = client.chat.completions.create(
-                messages=[
-                    {"role": m["role"], "content": m["content"]}
-                    for m in st.session_state.messages
-                ],
-                model="llama3-70b-8192",
-            )
-            response = chat_completion.choices[0].message.content
+            url = "https://api.groq.com/openai/v1/chat/completions"
+            headers = {
+                "Authorization": f"Bearer {groq_api_key}",
+                "Content-Type": "application/json"
+            }
+            
+            # Format messages for Groq API
+            formatted_messages = [
+                {"role": m["role"], "content": m["content"]}
+                for m in st.session_state.messages
+            ]
+            
+            payload = {
+                "model": "llama3-70b-8192",
+                "messages": formatted_messages
+            }
+            
+            # Direct HTTP POST request (Bypasses any library encoding bugs)
+            response_obj = requests.post(url, headers=headers, data=json.dumps(payload, ensure_ascii=False).encode('utf-8'))
+            
+            if response_obj.status_code == 200:
+                res_json = response_obj.json()
+                response = res_json["choices"][0]["message"]["content"]
+            else:
+                response = f"API Error ({response_obj.status_code}): {response_obj.text}"
+                
         except Exception as e:
-            response = f"API Error: {str(e)}"
+            response = f"Connection Error: {str(e)}"
     else:
-        response = "API Key is missing or invalid."
+        response = "API Key is missing in Streamlit Secrets."
 
     st.session_state.messages.append({"role": "assistant", "content": response})
     with st.chat_message("assistant"):
