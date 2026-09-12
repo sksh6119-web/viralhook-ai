@@ -10,12 +10,13 @@ except Exception as e:
     st.error(f"API Key error: {e}")
     st.stop()
 
+# ইউনিভার্সাল ভাষা ডিটেকশন সিস্টেম (যেই ভাষা, সেই ভাষায় উত্তর)
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "system", "content": "You are Gemini AI. Always reply accurately in the exact language the user asks. Be polite and friendly."}
+        {"role": "system", "content": "You are Gemini, an advanced and friendly AI assistant. Detect the language of the user's input automatically and always reply fluently in that exact same language (Bengali, Hindi, English, Spanish, etc.). Be polite, accurate, and helpful."},
+        {"role": "assistant", "content": "নমস্কার! 😊 আমি আপনার জেমিনি সহকারী। আপনি বাংলা, হিন্দি, ইংরেজি বা যেকোনো ভাষায় কথা বলতে পারেন—আমি সেই ভাষাতেই উত্তর দেব এবং যারা পড়তে পারেন না, তারা নিচের '🔊 ভয়েস শুনুন' বাটনে ক্লিক করলেই শুনতে পাবেন। বলুন, কীভাবে সাহায্য করতে পারি?"}
     ]
 
-# প্রথমদিকের সেই প্রিমিয়াম ও নিখুঁত ডিজাইন লেআউট
 st.markdown("""
     <style>
     #MainMenu {visibility: hidden;}
@@ -65,14 +66,12 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# হেডার ও ভয়েস ড্রপডাউন
 col1, col2 = st.columns([5, 1])
 with col1:
     st.markdown("<h3 style='color: #202124; margin-bottom: 0; font-weight: 500;'>✨ Gemini</h3>", unsafe_allow_html=True)
 with col2:
     voice_gender = st.selectbox("ভয়েস", ["Female", "Male"], label_visibility="collapsed")
 
-# আপনার অ্যাডস্টার্নার Smartlink ব্যানার
 ad_url = "https://www.profitableratecpmnetwork.com/txpfccym?key=16ed7712c3ae7b7b8d90efb5c53300b3"
 st.markdown(f"""
     <a href="{ad_url}" target="_blank" style="text-decoration: none;">
@@ -82,7 +81,6 @@ st.markdown(f"""
     </a>
 """, unsafe_allow_html=True)
 
-# চ্যাট হিস্ট্রি এবং এআই উত্তরের নিচে সরাসরি কার্যকরী ভয়েস সিস্টেম
 for i, message in enumerate(st.session_state.messages):
     if message["role"] != "system":
         with st.chat_message(message["role"]):
@@ -92,7 +90,6 @@ for i, message in enumerate(st.session_state.messages):
                 safe_text = json.dumps(message["content"])
                 selected_voice_filter = "female" if voice_gender == "Female" else "male"
                 
-                # সাউন্ড যাতে নিশ্চিতভাবে বাজে তার জন্য পরীক্ষিত ব্রাউজার স্ক্রিপ্ট
                 voice_toolbar_html = f"""
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; border-top: 1px solid #f1f3f4; padding-top: 10px;">
                     <div style="display: flex; align-items: center; gap: 16px;">
@@ -115,14 +112,11 @@ for i, message in enumerate(st.session_state.messages):
                         alert('আপনার ব্রাউজার ভয়েস সাপোর্ট করে না।');
                         return;
                     }}
-                    
                     window.speechSynthesis.cancel();
-                    
                     var textToRead = {safe_text};
                     var speech = new SpeechSynthesisUtterance(textToRead);
                     speech.lang = 'bn-IN';
                     speech.rate = 0.95;
-                    
                     var voices = window.speechSynthesis.getVoices();
                     for(var k = 0; k < voices.length; k++) {{
                         if(voices[k].name.toLowerCase().includes('{selected_voice_filter}') || voices[k].lang.includes('bn')) {{
@@ -130,34 +124,28 @@ for i, message in enumerate(st.session_state.messages):
                             break;
                         }}
                     }}
-                    
                     var btnElem = document.getElementById('speaker_btn_{i}');
-                    
                     speech.onstart = function() {{
                         btnElem.style.background = '#fce8e6';
                         btnElem.style.color = '#c5221f';
                         btnElem.innerHTML = '🔊 বলছি...';
                     }};
-                    
                     speech.onend = function() {{
                         btnElem.style.background = '#e8f0fe';
                         btnElem.style.color = '#1a73e8';
                         btnElem.innerHTML = '🔊 ভয়েস শুনুন';
                     }};
-                    
                     speech.onerror = function() {{
                         btnElem.style.background = '#e8f0fe';
                         btnElem.style.color = '#1a73e8';
                         btnElem.innerHTML = '🔊 ভয়েস শুনুন';
                     }};
-                    
                     window.speechSynthesis.speak(speech);
                 }}
                 </script>
                 """
                 st.markdown(voice_toolbar_html, unsafe_allow_html=True)
 
-# ইউজার ইনপুট ও এআই রেসপন্স
 if prompt := st.chat_input("Gemini-কে কিছু জিজ্ঞাসা করুন..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
