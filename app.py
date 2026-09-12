@@ -10,13 +10,13 @@ st.set_page_config(
 st.title("✨ AI Assistant")
 st.write("Ask your questions below.")
 
-# Initialize Groq client safely
+# Initialize Groq client safely from secrets
 try:
     groq_api_key = st.secrets["GROQ_API_KEY"]
     client = Groq(api_key=groq_api_key)
 except Exception:
     client = None
-    st.error("Please set your GROQ_API_KEY in Streamlit Secrets.")
+    st.error("Please configure your GROQ_API_KEY in Streamlit Secrets.")
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -41,9 +41,9 @@ if prompt := st.chat_input("Type your message here..."):
             )
             response = chat_completion.choices[0].message.content
         except Exception as e:
-            response = f"An error occurred: {str(e)}"
+            response = f"API Error: {str(e)}"
     else:
-        response = "API Key is not configured properly."
+        response = "API Key is missing or invalid."
 
     st.session_state.messages.append({"role": "assistant", "content": response})
     with st.chat_message("assistant"):
