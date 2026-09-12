@@ -75,7 +75,6 @@ st.markdown(f"""
     </a>
 """, unsafe_allow_html=True)
 
-# চ্যাট হিস্ট্রি রেন্ডার করা
 for i, message in enumerate(st.session_state.messages):
     if message["role"] != "system":
         with st.chat_message(message["role"]):
@@ -83,7 +82,6 @@ for i, message in enumerate(st.session_state.messages):
             
             if message["role"] == "assistant":
                 safe_text = json.dumps(message["content"])
-                selected_filter = "female" if voice_gender == "Female" else "male"
                 
                 voice_html = f"""
                 <div style="display: flex; justify-content: flex-end; margin-top: 14px; border-top: 1px solid #f1f3f4; padding-top: 10px;">
@@ -106,14 +104,6 @@ for i, message in enumerate(st.session_state.messages):
                     utterance.lang = 'bn-IN';
                     utterance.rate = 0.95;
                     
-                    var voices = window.speechSynthesis.getVoices();
-                    for(var k = 0; k < voices.length; k++) {{
-                        if(voices[k].name.toLowerCase().includes('{selected_filter}') || voices[k].lang.includes('bn')) {{
-                            utterance.voice = voices[k];
-                            break;
-                        }}
-                    }}
-                    
                     var btnElem = document.getElementById('voice_btn_{i}');
                     
                     utterance.onstart = function() {{
@@ -134,7 +124,6 @@ for i, message in enumerate(st.session_state.messages):
                 """
                 st.markdown(voice_html, unsafe_allow_html=True)
 
-# ইউজার ইনপুট এবং API কল
 if prompt := st.chat_input("Gemini-কে কিছু জিজ্ঞাসা করুন..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
