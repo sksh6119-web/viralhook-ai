@@ -1,5 +1,5 @@
 import streamlit as st
-import requests
+import urllib.request
 import json
 
 st.set_page_config(
@@ -32,12 +32,12 @@ if prompt := st.chat_input("Type your message here..."):
     if groq_api_key:
         try:
             url = "https://api.groq.com/openai/v1/chat/completions"
+            
             headers = {
                 "Authorization": f"Bearer {groq_api_key}",
                 "Content-Type": "application/json"
             }
             
-            # Format messages for Groq API
             formatted_messages = [
                 {"role": m["role"], "content": m["content"]}
                 for m in st.session_state.messages
@@ -48,20 +48,19 @@ if prompt := st.chat_input("Type your message here..."):
                 "messages": formatted_messages
             }
             
-            # Direct HTTP POST request (Bypasses any library encoding bugs)
-            response_obj = requests.post(url, headers=headers, data=json.dumps(payload, ensure_ascii=False).encode('utf-8'))
+            data = json.dumps(payload).encode("utf-8")
+            req = urllib.request.Request(url, data=data, headers=headers, method="POST")
             
-            if response_obj.status_code == 200:
-                res_json = response_obj.json()
-                response = res_json["choices"][0]["message"]["content"]
-            else:
-                response = f"API Error ({response_obj.status_code}): {response_obj.text}"
+            with urllib.request.urlopen(req) as response_obj:
+                res_data = json.loads(response_obj.read().decode("utf-8"))
+                response = res_data["choices"][0]["message"]["content"]
                 
         except Exception as e:
-            response = f"Connection Error: {str(e)}"
+            response = f"Error: {str(e)}"
     else:
         response = "API Key is missing in Streamlit Secrets."
 
     st.session_state.messages.append({"role": "assistant", "content": response})
     with st.chat_message("assistant"):
         st.markdown(response)
+
