@@ -8,7 +8,6 @@ st.set_page_config(
     layout="centered"
 )
 
-# জেমিনির মতো পরিষ্কার লুক দেওয়ার জন্য কিছু কাস্টম CSS স্টাইল
 st.markdown("""
     <style>
     .stChatMessage {
@@ -22,22 +21,19 @@ st.markdown("""
 st.title("✨ AI Assistant")
 st.write("আপনার যেকোনো প্রশ্ন বা স্ক্রিপ্ট এখানে দিন, আমি জেমিনির মতো সুন্দর ও সাবলীলভাবে উত্তর দেব।")
 
-# Get API key safely from Streamlit Secrets
 try:
     groq_api_key = st.secrets["GROQ_API_KEY"]
 except Exception:
     groq_api_key = None
 
 if "messages" not in st.session_state:
-    # এখানে সিস্টেম প্রম্পট সেট করা হলো যাতে এআই একদম মানুষের মতো, সাবলীল এবং জেমিনির স্টাইলে কথা বলে
     st.session_state.messages = [
         {
             "role": "system", 
-            "content": "You are a highly intelligent, natural, and helpful AI assistant, similar to Google Gemini. Speak politely, clearly, and engagingly in Bengali (or the user's requested language) so that it feels like a real human conversation, not robotic. Never break character."
+            "content": "You are a highly intelligent, natural, and helpful AI assistant, similar to Google Gemini. Speak politely, clearly, and engagingly in Bengali so that it feels like a real human conversation, not robotic. Never break character."
         }
     ]
 
-# ডিসপ্লে করার সময় শুধু ইউজার এবং অ্যাসিস্ট্যান্টের চ্যাট দেখানোর জন্য (সিস্টেম প্রম্পট লুকিয়ে রাখা ভালো)
 for message in st.session_state.messages:
     if message["role"] != "system":
         with st.chat_message(message["role"]):
