@@ -15,7 +15,7 @@ if "messages" not in st.session_state:
         {"role": "system", "content": "You are a supremely knowledgeable, wise, and incredibly friendly AI companion. You have access to all information in the universe and can answer any question accurately and instantly. Always use extremely polite, decent, respectful, and sweet language in Bengali. Never use any harsh, inappropriate, or bad words. When greeted like 'Hi' or 'Hello', warmly and affectionately ask how the user is doing, what's up, and offer a friendly chat just like a caring best friend."}
     ]
 
-# প্রিমিয়াম ডিজাইন ও ভাসমান ইনপুট বক্সের জন্য CSS
+# জেমিনির মতো প্রিমিয়াম লুক এবং ফ্লোটিং ইনপুট বক্সের জন্য CSS
 st.markdown("""
     <style>
     #MainMenu {visibility: hidden;}
@@ -65,14 +65,14 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# ওপরের হেডার, অ্যাড ব্যানার ও ভয়েস জেন্ডার ড্রপডাউন
-col1, col2 = st.columns([4, 1])
+# ওপরের হেডার ও ভয়েস ড্রপডাউন
+col1, col2 = st.columns([5, 1])
 with col1:
-    st.markdown("<h3 style='color: #202124; margin-bottom: 0; font-weight: 500;'>✨ Gemini</h3>", unsafe_allow_html=User if 'User' in globals() else object)
+    st.markdown("<h3 style='color: #202124; margin-bottom: 0; font-weight: 500;'>✨ Gemini</h3>", unsafe_allow_html=True)
 with col2:
     voice_gender = st.selectbox("ভয়েস", ["Female", "Male"], label_visibility="collapsed")
 
-# আপনার অ্যাডস্টার্নার Smartlink দিয়ে স্পন্সরড ব্যানার
+# আপনার অ্যাডস্টার্নার Smartlink ব্যানার
 ad_url = "https://www.profitableratecpmnetwork.com/txpfccym?key=16ed7712c3ae7b7b8d90efb5c53300b3"
 st.markdown(f"""
     <a href="{ad_url}" target="_blank" style="text-decoration: none;">
@@ -82,7 +82,7 @@ st.markdown(f"""
     </a>
 """, unsafe_allow_html=True)
 
-# চ্যাট হিস্ট্রি এবং এআই উত্তরের নিচে ভয়েস ও অন্যান্য টুলবার
+# চ্যাট হিস্ট্রি এবং এআই উত্তরের নিচে স্পিকার ও অন্যান্য আইকন
 for i, message in enumerate(st.session_state.messages):
     if message["role"] != "system":
         with st.chat_message(message["role"]):
@@ -109,7 +109,9 @@ for i, message in enumerate(st.session_state.messages):
                         alert('আপনার ব্রাউজার ভয়েস সাপোর্ট করে না।');
                         return;
                     }}
+                    
                     var icon = document.getElementById('speaker_icon_{i}');
+                    
                     if (isSpeaking_{i}) {{
                         window.speechSynthesis.cancel();
                         isSpeaking_{i} = false;
@@ -121,6 +123,7 @@ for i, message in enumerate(st.session_state.messages):
                         var msg = new SpeechSynthesisUtterance(textToSpeak);
                         msg.lang = 'bn-IN';
                         msg.rate = 1.0;
+                        
                         var voices = window.speechSynthesis.getVoices();
                         for(var v = 0; v < voices.length; v++) {{
                             if(voices[v].name.toLowerCase().includes('{selected_voice_filter}') || voices[v].lang.includes('bn')) {{
@@ -128,11 +131,13 @@ for i, message in enumerate(st.session_state.messages):
                                 break;
                             }}
                         }}
+                        
                         msg.onend = function() {{
                             isSpeaking_{i} = false;
                             icon.style.color = '#5f6368';
                             icon.innerText = '🔊';
                         }};
+                        
                         isSpeaking_{i} = true;
                         icon.style.color = '#1a73e8';
                         icon.innerText = '🔇';
