@@ -15,7 +15,7 @@ if "messages" not in st.session_state:
         {"role": "system", "content": "You are a supremely knowledgeable, wise, and incredibly friendly AI companion. You have access to all information in the universe and can answer any question accurately and instantly. Always use extremely polite, decent, respectful, and sweet language in Bengali. Never use any harsh, inappropriate, or bad words. When greeted like 'Hi' or 'Hello', warmly and affectionately ask how the user is doing, what's up, and offer a friendly chat just like a caring best friend."}
     ]
 
-# জেমিনির মতো হুবহু প্রিমিয়াম লুক এবং ফ্লোটিং ইনপুট বক্সের জন্য CSS
+# জেমিনির মতো প্রিমিয়াম লুক এবং ফ্লোটিং ইনপুট বক্সের জন্য CSS
 st.markdown("""
     <style>
     #MainMenu {visibility: hidden;}
@@ -84,20 +84,33 @@ for i, message in enumerate(st.session_state.messages):
                 safe_text = json.dumps(message["content"])
                 selected_voice_filter = "female" if voice_gender == "Female" else "male"
                 
-                # জেমিনির মতো আইকন বার (Like, Dislike, Retry, Share, Copy, More, Speaker)
+                # জেমিনির মতো আইকন বার যেখানে স্পিকার আইকনে হাত দিলেই ভয়েস চালু ও বন্ধ হবে
                 gemini_toolbar_html = f"""
-                <div style="display: flex; align-items: center; gap: 16px; margin-top: 12px; color: #5f6368; font-size: 18px;">
-                    <span title="ভালো লেগেছে" style="cursor: pointer; transition: 0.2s;" onclick="alert('ধন্যবাদ ফিডব্যাকের জন্য!')">👍</span>
-                    <span title="ভালো লাগেনি" style="cursor: pointer; transition: 0.2s;" onclick="alert('ফিডব্যাক গ্রহণের জন্য ধন্যবাদ!')">👎</span>
-                    <span title="পুনরায় লিখুন" style="cursor: pointer; transition: 0.2s;" onclick="alert('রিলোড ফিচার فعال!')">🔄</span>
-                    <span title="শেয়ার করুন" style="cursor: pointer; transition: 0.2s;" onclick="alert('শেয়ার অপশন!')">📤</span>
-                    <span title="কপি করুন" style="cursor: pointer; transition: 0.2s;" onclick="navigator.clipboard.writeText({safe_text}); alert('টেক্সট কপি করা হয়েছে!');">📋</span>
-                    <span title="শুনুন (Voice)" style="cursor: pointer; transition: 0.2s; font-size: 20px;" onclick="playSpeech_{i}()">🔊</span>
+                <div style="display: flex; align-items: center; gap: 18px; margin-top: 12px; color: #5f6368; font-size: 18px;">
+                    <span title="ভালো লেগেছে" style="cursor: pointer;" onclick="alert('ধন্যবাদ!')">👍</span>
+                    <span title="ভালো লাগেনি" style="cursor: pointer;" onclick="alert('ধন্যবাদ!')">👎</span>
+                    <span title="পুনরায় লিখুন" style="cursor: pointer;" onclick="alert('রিলোড!')">🔄</span>
+                    <span title="শেয়ার করুন" style="cursor: pointer;" onclick="alert('শেয়ার!')">📤</span>
+                    <span title="কপি করুন" style="cursor: pointer;" onclick="navigator.clipboard.writeText({safe_text}); alert('টেক্সট কপি করা হয়েছে!');">📋</span>
+                    <span id="speaker_icon_{i}" title="ভয়েস শুনুন" style="cursor: pointer; font-size: 22px; color: #1a73e8;" onclick="toggleSpeech_{i}()">🔊</span>
                 </div>
                 
                 <script>
-                function playSpeech_{i}() {{
-                    if ('speechSynthesis' in window) {{
+                var isSpeaking_{i} = false;
+                function toggleSpeech_{i}() {{
+                    if (!('speechSynthesis' in window)) {{
+                        alert('আপনার ব্রাউজার ভয়েস সাপোর্ট করে না।');
+                        return;
+                    }}
+                    
+                    var icon = document.getElementById('speaker_icon_{i}');
+                    
+                    if (isSpeaking_{i}) {{
+                        window.speechSynthesis.cancel();
+                        isSpeaking_{i} = false;
+                        icon.style.color = '#5f6368';
+                        icon.innerText = '🔊';
+                    }} else {{
                         window.speechSynthesis.cancel();
                         var textToSpeak = {safe_text};
                         var msg = new SpeechSynthesisUtterance(textToSpeak);
@@ -111,6 +124,16 @@ for i, message in enumerate(st.session_state.messages):
                                 break;
                             }}
                         }}
+                        
+                        msg.onend = function() {{
+                            isSpeaking_{i} = false;
+                            icon.style.color = '#5f6368';
+                            icon.innerText = '🔊';
+                        }};
+                        
+                        isSpeaking_{i} = true;
+                        icon.style.color = '#1a73e8';
+                        icon.innerText = '🔇';
                         window.speechSynthesis.speak(msg);
                     }}
                 }}
