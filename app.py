@@ -14,21 +14,9 @@ if "messages" not in st.session_state:
         {"role": "system", "content": "You are a supremely knowledgeable, wise, and incredibly friendly AI companion. You have access to all information in the universe and can answer any question accurately and instantly. Always use extremely polite, decent, respectful, and sweet language in Bengali. Never use any harsh, inappropriate, or bad words. When greeted like 'Hi' or 'Hello', warmly and affectionately ask how the user is doing, what's up, and offer a friendly chat just like a caring best friend."}
     ]
 
-# ইন্টারফেস সুন্দর ও গোছানো রাখার জন্য কাস্টম সিএসএস
-st.markdown("""
-    <style>
-    .stChatMessage {
-        background-color: #f8f9fa;
-        border-radius: 15px;
-        padding: 10px;
-        margin-bottom: 10px;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
 st.title("✨ Gemini AI Assistant")
 
-# কণ্ঠ নির্বাচন ড্রপডাউন
+# কণ্ঠ নির্বাচন ড্রপডাউন (Female / Male)
 col1, col2 = st.columns([3, 1])
 with col2:
     voice_gender = st.selectbox("ভয়েস:", ["Female", "Male"])
@@ -39,7 +27,7 @@ for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
-# ইনপুট বক্স
+# ইউজারের মেসেজ ইনপুট
 if prompt := st.chat_input("Gemini-কে কিছু জিজ্ঞাসা করুন..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
@@ -57,21 +45,23 @@ if prompt := st.chat_input("Gemini-কে কিছু জিজ্ঞাসা 
                 st.markdown(reply)
                 st.session_state.messages.append({"role": "assistant", "content": reply})
 
-                # ব্রাউজার ভয়েস আউটপুট
+                # ব্রাউজারের ভয়েস আউটপুট স্ক্রিপ্ট (উত্তর মুখে বলে দেওয়ার জন্য)
                 selected_voice_filter = "female" if voice_gender == "Female" else "male"
                 js_code = f"""
                 <script>
-                var msg = new SpeechSynthesisUtterance();
-                msg.text = `{reply.replace('`', '')}`;
-                msg.lang = 'bn-BD';
-                var voices = window.speechSynthesis.getVoices();
-                for(var i = 0; i < voices.length; i++) {{
-                    if(voices[i].name.toLowerCase().includes('{selected_voice_filter}')) {{
-                        msg.voice = voices[i];
-                        break;
+                if ('speechSynthesis' in window) {{
+                    var msg = new SpeechSynthesisUtterance();
+                    msg.text = `{reply.replace('`', '').replace('"', '\\"')}`;
+                    msg.lang = 'bn-BD';
+                    var voices = window.speechSynthesis.getVoices();
+                    for(var i = 0; i < voices.length; i++) {{
+                        if(voices[i].name.toLowerCase().includes('{selected_voice_filter}')) {{
+                            msg.voice = voices[i];
+                            break;
+                        }}
                     }}
+                    window.speechSynthesis.speak(msg);
                 }}
-                window.speechSynthesis.speak(msg);
                 </script>
                 """
                 st.markdown(js_code, unsafe_allow_html=True)
