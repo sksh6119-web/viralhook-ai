@@ -1,5 +1,6 @@
 import streamlit as st
 from groq import Groq
+import json
 
 st.set_page_config(page_title="Gemini AI Assistant", page_icon="✨", layout="wide")
 
@@ -14,7 +15,7 @@ if "messages" not in st.session_state:
         {"role": "system", "content": "You are a supremely knowledgeable, wise, and incredibly friendly AI companion. You have access to all information in the universe and can answer any question accurately and instantly. Always use extremely polite, decent, respectful, and sweet language in Bengali. Never use any harsh, inappropriate, or bad words. When greeted like 'Hi' or 'Hello', warmly and affectionately ask how the user is doing, what's up, and offer a friendly chat just like a caring best friend."}
     ]
 
-# প্রিমিয়াম ডিজাইন ও ভাসমান ইনপুট বক্সের জন্য CSS
+# জেমিনির মতো হুবহু প্রিমিয়াম লুক এবং ফ্লোটিং ইনপুট বক্সের জন্য CSS
 st.markdown("""
     <style>
     #MainMenu {visibility: hidden;}
@@ -22,23 +23,23 @@ st.markdown("""
     header {visibility: hidden;}
     
     .stApp {
-        background-color: #f0f4f9;
+        background-color: #f8f9fa;
         font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     }
     
     .stChatMessage {
         background-color: #ffffff !important;
         border-radius: 20px !important;
-        padding: 16px 20px !important;
-        margin-bottom: 16px !important;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.02);
-        border: 1px solid #e1e6ed !important;
+        padding: 18px 22px !important;
+        margin-bottom: 18px !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        border: 1px solid #e9ecef !important;
     }
     
     .stChatMessage p {
-        color: #1f1f1f !important;
+        color: #202124 !important;
         font-size: 16px !important;
-        line-height: 1.5;
+        line-height: 1.6;
     }
     
     .stChatInput {
@@ -49,10 +50,10 @@ st.markdown("""
         width: 85% !important;
         max-width: 800px !important;
         background: #ffffff !important;
-        border-radius: 30px !important;
-        padding: 8px 20px !important;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.12) !important;
-        border: 1px solid #dcdfe5 !important;
+        border-radius: 32px !important;
+        padding: 6px 16px !important;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08) !important;
+        border: 1px solid #dadce0 !important;
         z-index: 99999 !important;
     }
     
@@ -64,38 +65,42 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# হেডার ও ভয়েস সিলেক্টর
+# ওপরের হেডার ও ভয়েস জেন্ডার ড্রপডাউন
 col1, col2 = st.columns([5, 1])
 with col1:
-    st.markdown("<h3 style='color: #1f1f1f; margin-bottom: 0;'>✨ Gemini AI</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='color: #202124; margin-bottom: 0; font-weight: 500;'>✨ Gemini</h3>", unsafe_allow_html=True)
 with col2:
     voice_gender = st.selectbox("ভয়েস", ["Female", "Male"], label_visibility="collapsed")
 
-st.markdown("<hr style='margin-top: 10px; margin-bottom: 20px; border: 0; border-top: 1px solid #e1e6ed;'>", unsafe_allow_html=True)
+st.markdown("<hr style='margin-top: 10px; margin-bottom: 20px; border: 0; border-top: 1px solid #e9ecef;'>", unsafe_allow_html=True)
 
-# চ্যাট হিস্ট্রি প্রদর্শন এবং প্রতিটি এআই উত্তরের সাথে প্লে (▶️) বাটন যুক্ত করা
+# চ্যাট হিস্ট্রি এবং এআই উত্তরের নিচে জেমিনির স্টাইলিশ অ্যাকশন আইকন bar
 for i, message in enumerate(st.session_state.messages):
     if message["role"] != "system":
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
             
-            # যদি মেসেজটি অ্যাসিস্ট্যান্ট বা এআই-এর হয়, তবে নিচে একটি প্লে বাটন দেখাবে
             if message["role"] == "assistant":
-                clean_text = message["content"].replace('`', '').replace('"', '\\"').replace('\n', ' ')
+                safe_text = json.dumps(message["content"])
                 selected_voice_filter = "female" if voice_gender == "Female" else "male"
                 
-                play_button_html = f"""
-                <div style="margin-top: 8px;">
-                    <button onclick="playVoice_{i}()" style="background-color: #f0f4f9; border: 1px solid #dcdfe5; border-radius: 15px; padding: 5px 12px; cursor: pointer; font-size: 14px; display: inline-flex; align-items: center; gap: 5px;">
-                        ▶️ শুনুন
-                    </button>
+                # জেমিনির মতো আইকন বার (Like, Dislike, Retry, Share, Copy, More, Speaker)
+                gemini_toolbar_html = f"""
+                <div style="display: flex; align-items: center; gap: 16px; margin-top: 12px; color: #5f6368; font-size: 18px;">
+                    <span title="ভালো লেগেছে" style="cursor: pointer; transition: 0.2s;" onclick="alert('ধন্যবাদ ফিডব্যাকের জন্য!')">👍</span>
+                    <span title="ভালো লাগেনি" style="cursor: pointer; transition: 0.2s;" onclick="alert('ফিডব্যাক গ্রহণের জন্য ধন্যবাদ!')">👎</span>
+                    <span title="পুনরায় লিখুন" style="cursor: pointer; transition: 0.2s;" onclick="alert('রিলোড ফিচার فعال!')">🔄</span>
+                    <span title="শেয়ার করুন" style="cursor: pointer; transition: 0.2s;" onclick="alert('শেয়ার অপশন!')">📤</span>
+                    <span title="কপি করুন" style="cursor: pointer; transition: 0.2s;" onclick="navigator.clipboard.writeText({safe_text}); alert('টেক্সট কপি করা হয়েছে!');">📋</span>
+                    <span title="শুনুন (Voice)" style="cursor: pointer; transition: 0.2s; font-size: 20px;" onclick="playSpeech_{i}()">🔊</span>
                 </div>
+                
                 <script>
-                function playVoice_{i}() {{
+                function playSpeech_{i}() {{
                     if ('speechSynthesis' in window) {{
                         window.speechSynthesis.cancel();
-                        var msg = new SpeechSynthesisUtterance();
-                        msg.text = "{clean_text}";
+                        var textToSpeak = {safe_text};
+                        var msg = new SpeechSynthesisUtterance(textToSpeak);
                         msg.lang = 'bn-IN';
                         msg.rate = 1.0;
                         
@@ -111,16 +116,16 @@ for i, message in enumerate(st.session_state.messages):
                 }}
                 </script>
                 """
-                st.markdown(play_button_html, unsafe_allow_html=True)
+                st.markdown(gemini_toolbar_html, unsafe_allow_html=True)
 
-# ইউজার ইনপুট
+# ইউজার ইনপুট (নিচে চওড়া ভাসমান বক্স)
 if prompt := st.chat_input("Gemini-কে কিছু জিজ্ঞাসা করুন..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        with st.spinner("উত্তর তৈরি হচ্ছে..."):
+        with st.spinner("চিন্তা করছি..."):
             try:
                 res = client.chat.completions.create(
                     model="openai/gpt-oss-20b",
