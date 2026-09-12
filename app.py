@@ -15,7 +15,7 @@ if "messages" not in st.session_state:
         {"role": "system", "content": "You are a supremely knowledgeable, wise, and incredibly friendly AI companion. You have access to all information in the universe and can answer any question accurately and instantly. Always use extremely polite, decent, respectful, and sweet language in Bengali. Never use any harsh, inappropriate, or bad words. When greeted like 'Hi' or 'Hello', warmly and affectionately ask how the user is doing, what's up, and offer a friendly chat just like a caring best friend."}
     ]
 
-# প্রিমিয়াম ডিজাইন ও ভাসমান ইনপুট বক্সের জন্য CSS
+# প্রিমিয়াম ডিজাইন ও ফ্লোটিং ইনপুট বক্সের জন্য CSS (আইকন ডানপাশে সাজানোর জন্য)
 st.markdown("""
     <style>
     #MainMenu {visibility: hidden;}
@@ -82,7 +82,7 @@ st.markdown(f"""
     </a>
 """, unsafe_allow_html=True)
 
-# চ্যাট হিস্ট্রি এবং এআই উত্তরের নিচে আসল জেমিনির মতো কার্যক্ষম আইকন বার
+# চ্যাট হিস্ট্রি এবং এআই উত্তরের নিচে প্রফেশনাল SVG আইকন বার (ডানপাশে ফিক্সড)
 for i, message in enumerate(st.session_state.messages):
     if message["role"] != "system":
         with st.chat_message(message["role"]):
@@ -92,14 +92,24 @@ for i, message in enumerate(st.session_state.messages):
                 safe_text = json.dumps(message["content"])
                 selected_voice_filter = "female" if voice_gender == "Female" else "male"
                 
+                # আসল জেমিনির মতো অপশন বার যেখানে আইকনগুলোতে ক্লিক করলে কাজ হবে
                 gemini_toolbar_html = f"""
-                <div style="display: flex; align-items: center; gap: 20px; margin-top: 14px; color: #5f6368; font-size: 18px;">
-                    <span title="ভালো লেগেছে" style="cursor: pointer; transition: 0.2s;" onclick="this.style.color='#1a73e8'; alert('ফিডব্যাকের জন্য ধন্যবাদ!');">👍</span>
-                    <span title="ভালো লাগেনি" style="cursor: pointer; transition: 0.2s;" onclick="this.style.color='#d93025'; alert('আপনার মতামত রেকর্ড করা হয়েছে।');">👎</span>
-                    <span title="পুনরায় লিখুন" style="cursor: pointer; transition: 0.2s;" onclick="location.reload();">🔄</span>
-                    <span title="শেয়ার করুন" style="cursor: pointer; transition: 0.2s;" onclick="if(navigator.share) {{ navigator.share({{title: 'Gemini AI', text: {safe_text}}}); }} else {{ alert('লিংক শেয়ার করা হয়েছে!'); }}">📤</span>
-                    <span title="কপি করুন" style="cursor: pointer; transition: 0.2s;" onclick="navigator.clipboard.writeText({safe_text}); alert('টেক্সট সফলভাবে কপি করা হয়েছে!');">📋</span>
-                    <span id="speaker_icon_{i}" title="ভয়েস শুনুন / বন্ধ করুন" style="cursor: pointer; font-size: 22px; color: #1a73e8; font-weight: bold;" onclick="toggleSpeech_{i}()">🔊</span>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; border-top: 1px solid #f1f3f4; padding-top: 10px;">
+                    <!-- বাম বা মাঝখানের অপশনগুলো -->
+                    <div style="display: flex; align-items: center; gap: 16px;">
+                        <button title="লাইক" onclick="this.style.color='#1a73e8'; alert('ফিডব্যাকের জন্য ধন্যবাদ!');" style="background:none; border:none; cursor:pointer; font-size:16px; color:#5f6368;">👍</button>
+                        <button title="ডিসলাইক" onclick="this.style.color='#d93025'; alert('মতামত রেকর্ড করা হয়েছে!');" style="background:none; border:none; cursor:pointer; font-size:16px; color:#5f6368;">👎</button>
+                        <button title="পুনরায় লিখুন" onclick="location.reload();" style="background:none; border:none; cursor:pointer; font-size:16px; color:#5f6368;">🔄</button>
+                        <button title="শেয়ার করুন" onclick="navigator.clipboard.writeText({safe_text}); alert('টেক্সট কপি ও শেয়ারের জন্য প্রস্তুত!');" style="background:none; border:none; cursor:pointer; font-size:16px; color:#5f6368;">📤</button>
+                        <button title="কপি করুন" onclick="navigator.clipboard.writeText({safe_text}); alert('টেক্সট কপি করা হয়েছে!');" style="background:none; border:none; cursor:pointer; font-size:16px; color:#5f6368;">📋</button>
+                    </div>
+                    
+                    <!-- একদম ডানপাশের ভয়েস স্পিকার আইকন (ট্যাপ করলে বলবে ও বন্ধ হবে) -->
+                    <div>
+                        <button id="speaker_btn_{i}" title="ভয়েস শুনুন / বন্ধ করুন" onclick="toggleSpeech_{i}()" style="background: #f1f3f4; border: none; border-radius: 50%; width: 38px; height: 38px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: 0.2s;">
+                            🔊
+                        </button>
+                    </div>
                 </div>
                 
                 <script>
@@ -110,13 +120,13 @@ for i, message in enumerate(st.session_state.messages):
                         return;
                     }}
                     
-                    var icon = document.getElementById('speaker_icon_{i}');
+                    var btn = document.getElementById('speaker_btn_{i}');
                     
                     if (isSpeaking_{i}) {{
                         window.speechSynthesis.cancel();
                         isSpeaking_{i} = false;
-                        icon.style.color = '#5f6368';
-                        icon.innerText = '🔊';
+                        btn.style.background = '#f1f3f4';
+                        btn.innerHTML = '🔊';
                     }} else {{
                         window.speechSynthesis.cancel();
                         var textToSpeak = {safe_text};
@@ -134,13 +144,13 @@ for i, message in enumerate(st.session_state.messages):
                         
                         msg.onend = function() {{
                             isSpeaking_{i} = false;
-                            icon.style.color = '#5f6368';
-                            icon.innerText = '🔊';
+                            btn.style.background = '#f1f3f4';
+                            btn.innerHTML = '🔊';
                         }};
                         
                         isSpeaking_{i} = true;
-                        icon.style.color = '#1a73e8';
-                        icon.innerText = '🔇';
+                        btn.style.background = '#e8f0fe';
+                        btn.innerHTML = '🔇';
                         window.speechSynthesis.speak(msg);
                     }}
                 }}
