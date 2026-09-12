@@ -1,5 +1,9 @@
 import streamlit as st
+import os
 from groq import Groq
+
+# Force UTF-8 encoding environment to fix ascii codec errors
+os.environ["PYTHONIOENCODING"] = "utf-8"
 
 st.set_page_config(
     page_title="AI Assistant",
@@ -26,9 +30,11 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
 
 if prompt := st.chat_input("Type your message here..."):
-    st.session_state.messages.append({"role": "user", "content": prompt})
+    # Ensure safe encoding for prompt
+    safe_prompt = str(prompt).encode("utf-8", errors="ignore").decode("utf-8")
+    st.session_state.messages.append({"role": "user", "content": safe_prompt})
     with st.chat_message("user"):
-        st.markdown(prompt)
+        st.markdown(safe_prompt)
 
     if client:
         try:
