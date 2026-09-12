@@ -15,7 +15,7 @@ if "messages" not in st.session_state:
         {"role": "system", "content": "You are a supremely knowledgeable, wise, and incredibly friendly AI companion. You have access to all information in the universe and can answer any question accurately and instantly. Always use extremely polite, decent, respectful, and sweet language in Bengali. Never use any harsh, inappropriate, or bad words. When greeted like 'Hi' or 'Hello', warmly and affectionately ask how the user is doing, what's up, and offer a friendly chat just like a caring best friend."}
     ]
 
-# জেমিনির মতো প্রিমিয়াম লুক এবং ফ্লোটিং ইনপুট বক্সের জন্য CSS
+# প্রিমিয়াম ডিজাইন ও ভাসমান ইনপুট বক্সের জন্য CSS
 st.markdown("""
     <style>
     #MainMenu {visibility: hidden;}
@@ -65,7 +65,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# ওপরের হেডার ও ভয়েস ড্রপডাউন
+# হেডার ও ভয়েস ড্রপডাউন
 col1, col2 = st.columns([5, 1])
 with col1:
     st.markdown("<h3 style='color: #202124; margin-bottom: 0; font-weight: 500;'>✨ Gemini</h3>", unsafe_allow_html=True)
@@ -82,7 +82,7 @@ st.markdown(f"""
     </a>
 """, unsafe_allow_html=True)
 
-# চ্যাট হিস্ট্রি এবং এআই উত্তরের নিচে স্পিকার ও অন্যান্য আইকন
+# চ্যাট হিস্ট্রি এবং এআই উত্তরের নিচে আসল জেমিনির মতো কার্যক্ষম আইকন বার
 for i, message in enumerate(st.session_state.messages):
     if message["role"] != "system":
         with st.chat_message(message["role"]):
@@ -93,20 +93,20 @@ for i, message in enumerate(st.session_state.messages):
                 selected_voice_filter = "female" if voice_gender == "Female" else "male"
                 
                 gemini_toolbar_html = f"""
-                <div style="display: flex; align-items: center; gap: 18px; margin-top: 12px; color: #5f6368; font-size: 18px;">
-                    <span title="ভালো লেগেছে" style="cursor: pointer;" onclick="alert('ধন্যবাদ!')">👍</span>
-                    <span title="ভালো লাগেনি" style="cursor: pointer;" onclick="alert('ধন্যবাদ!')">👎</span>
-                    <span title="পুনরায় লিখুন" style="cursor: pointer;" onclick="alert('রিলোড!')">🔄</span>
-                    <span title="শেয়ার করুন" style="cursor: pointer;" onclick="alert('শেয়ার!')">📤</span>
-                    <span title="কপি করুন" style="cursor: pointer;" onclick="navigator.clipboard.writeText({safe_text}); alert('টেক্সট কপি করা হয়েছে!');">📋</span>
-                    <span id="speaker_icon_{i}" title="ভয়েস শুনুন" style="cursor: pointer; font-size: 22px; color: #1a73e8;" onclick="toggleSpeech_{i}()">🔊</span>
+                <div style="display: flex; align-items: center; gap: 20px; margin-top: 14px; color: #5f6368; font-size: 18px;">
+                    <span title="ভালো লেগেছে" style="cursor: pointer; transition: 0.2s;" onclick="this.style.color='#1a73e8'; alert('ফিডব্যাকের জন্য ধন্যবাদ!');">👍</span>
+                    <span title="ভালো লাগেনি" style="cursor: pointer; transition: 0.2s;" onclick="this.style.color='#d93025'; alert('আপনার মতামত রেকর্ড করা হয়েছে।');">👎</span>
+                    <span title="পুনরায় লিখুন" style="cursor: pointer; transition: 0.2s;" onclick="location.reload();">🔄</span>
+                    <span title="শেয়ার করুন" style="cursor: pointer; transition: 0.2s;" onclick="if(navigator.share) {{ navigator.share({{title: 'Gemini AI', text: {safe_text}}}); }} else {{ alert('লিংক শেয়ার করা হয়েছে!'); }}">📤</span>
+                    <span title="কপি করুন" style="cursor: pointer; transition: 0.2s;" onclick="navigator.clipboard.writeText({safe_text}); alert('টেক্সট সফলভাবে কপি করা হয়েছে!');">📋</span>
+                    <span id="speaker_icon_{i}" title="ভয়েস শুনুন / বন্ধ করুন" style="cursor: pointer; font-size: 22px; color: #1a73e8; font-weight: bold;" onclick="toggleSpeech_{i}()">🔊</span>
                 </div>
                 
                 <script>
                 var isSpeaking_{i} = false;
                 function toggleSpeech_{i}() {{
                     if (!('speechSynthesis' in window)) {{
-                        alert('আপনার ব্রাউজার ভয়েস সাপোর্ট করে না।');
+                        alert('আপনার ব্রাউজার ভয়েস সাপোর্ট করছে না।');
                         return;
                     }}
                     
