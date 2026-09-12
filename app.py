@@ -15,7 +15,7 @@ if "messages" not in st.session_state:
         {"role": "system", "content": "You are a supremely knowledgeable, wise, and incredibly friendly AI companion. You have access to all information in the universe and can answer any question accurately and instantly. Always use extremely polite, decent, respectful, and sweet language in Bengali. Never use any harsh, inappropriate, or bad words. When greeted like 'Hi' or 'Hello', warmly and affectionately ask how the user is doing, what's up, and offer a friendly chat just like a caring best friend."}
     ]
 
-# জেমিনির মতো প্রিমিয়াম লুক এবং ফ্লোটিং ইনপুট বক্সের জন্য CSS
+# প্রিমিয়াম ডিজাইন ও ভাসমান ইনপুট বক্সের জন্য CSS
 st.markdown("""
     <style>
     #MainMenu {visibility: hidden;}
@@ -58,23 +58,31 @@ st.markdown("""
     }
     
     .block-container {
-        padding-top: 30px !important;
+        padding-top: 20px !important;
         padding-bottom: 140px !important;
         max-width: 850px !important;
     }
     </style>
 """, unsafe_allow_html=True)
 
-# ওপরের হেডার ও ভয়েস জেন্ডার ড্রপডাউন
-col1, col2 = st.columns([5, 1])
+# ওপরের হেডার, অ্যাড ব্যানার ও ভয়েস জেন্ডার ড্রপডাউন
+col1, col2 = st.columns([4, 1])
 with col1:
-    st.markdown("<h3 style='color: #202124; margin-bottom: 0; font-weight: 500;'>✨ Gemini</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='color: #202124; margin-bottom: 0; font-weight: 500;'>✨ Gemini</h3>", unsafe_allow_html=User if 'User' in globals() else object)
 with col2:
     voice_gender = st.selectbox("ভয়েস", ["Female", "Male"], label_visibility="collapsed")
 
-st.markdown("<hr style='margin-top: 10px; margin-bottom: 20px; border: 0; border-top: 1px solid #e9ecef;'>", unsafe_allow_html=True)
+# আপনার অ্যাডস্টার্নার Smartlink দিয়ে স্পন্সরড ব্যানার
+ad_url = "https://www.profitableratecpmnetwork.com/txpfccym?key=16ed7712c3ae7b7b8d90efb5c53300b3"
+st.markdown(f"""
+    <a href="{ad_url}" target="_blank" style="text-decoration: none;">
+        <div style="background: linear-gradient(135deg, #4285f4, #34a853); color: white; padding: 10px 16px; border-radius: 12px; text-align: center; font-size: 14px; font-weight: 500; margin: 10px 0 20px 0; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+            🚀 বিশেষ অফার ও আপডেট দেখতে এখানে ক্লিক করুন! (Sponsored)
+        </div>
+    </a>
+""", unsafe_allow_html=True)
 
-# চ্যাট হিস্ট্রি এবং এআই উত্তরের নিচে জেমিনির স্টাইলিশ অ্যাকশন আইকন bar
+# চ্যাট হিস্ট্রি এবং এআই উত্তরের নিচে ভয়েস ও অন্যান্য টুলবার
 for i, message in enumerate(st.session_state.messages):
     if message["role"] != "system":
         with st.chat_message(message["role"]):
@@ -84,7 +92,6 @@ for i, message in enumerate(st.session_state.messages):
                 safe_text = json.dumps(message["content"])
                 selected_voice_filter = "female" if voice_gender == "Female" else "male"
                 
-                # জেমিনির মতো আইকন বার যেখানে স্পিকার আইকনে হাত দিলেই ভয়েস চালু ও বন্ধ হবে
                 gemini_toolbar_html = f"""
                 <div style="display: flex; align-items: center; gap: 18px; margin-top: 12px; color: #5f6368; font-size: 18px;">
                     <span title="ভালো লেগেছে" style="cursor: pointer;" onclick="alert('ধন্যবাদ!')">👍</span>
@@ -102,9 +109,7 @@ for i, message in enumerate(st.session_state.messages):
                         alert('আপনার ব্রাউজার ভয়েস সাপোর্ট করে না।');
                         return;
                     }}
-                    
                     var icon = document.getElementById('speaker_icon_{i}');
-                    
                     if (isSpeaking_{i}) {{
                         window.speechSynthesis.cancel();
                         isSpeaking_{i} = false;
@@ -116,7 +121,6 @@ for i, message in enumerate(st.session_state.messages):
                         var msg = new SpeechSynthesisUtterance(textToSpeak);
                         msg.lang = 'bn-IN';
                         msg.rate = 1.0;
-                        
                         var voices = window.speechSynthesis.getVoices();
                         for(var v = 0; v < voices.length; v++) {{
                             if(voices[v].name.toLowerCase().includes('{selected_voice_filter}') || voices[v].lang.includes('bn')) {{
@@ -124,13 +128,11 @@ for i, message in enumerate(st.session_state.messages):
                                 break;
                             }}
                         }}
-                        
                         msg.onend = function() {{
                             isSpeaking_{i} = false;
                             icon.style.color = '#5f6368';
                             icon.innerText = '🔊';
                         }};
-                        
                         isSpeaking_{i} = true;
                         icon.style.color = '#1a73e8';
                         icon.innerText = '🔇';
@@ -141,7 +143,7 @@ for i, message in enumerate(st.session_state.messages):
                 """
                 st.markdown(gemini_toolbar_html, unsafe_allow_html=True)
 
-# ইউজার ইনপুট (নিচে চওড়া ভাসমান বক্স)
+# ইউজার ইনপুট
 if prompt := st.chat_input("Gemini-কে কিছু জিজ্ঞাসা করুন..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
