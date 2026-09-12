@@ -12,7 +12,7 @@ except Exception as e:
 
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "system", "content": "You are Gemini, a supremely knowledgeable, wise, and incredibly friendly AI assistant. You have access to all information in the universe and can answer any question about any country, topic, or language accurately and instantly. Always reply in the exact language the user asks (Bengali, English, etc.). Be polite, respectful, and sweet."}
+        {"role": "system", "content": "You are Gemini, a supremely knowledgeable, wise, and friendly AI assistant. You can answer any question about any country, topic, or language accurately and instantly. Always reply in the exact language the user asks (Bengali, English, etc.). Be polite and respectful."}
     ]
 
 # প্রিমিয়াম ডিজাইন ও ভাসমান ইনপুট বক্সের জন্য CSS
