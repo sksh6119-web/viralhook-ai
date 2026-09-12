@@ -12,10 +12,12 @@ except Exception as e:
 
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "system", "content": "You are Gemini, a supremely knowledgeable, wise, and friendly AI assistant. You can answer any question about any country, topic, or language accurately and instantly. Always reply in the exact language the user asks (Bengali, English, etc.). Be polite and respectful."}
+        {
+            "role": "system", 
+            "content": "You are Gemini, a friendly AI assistant. Answer any question about any country, topic, or language accurately. Always reply in the exact language the user asks."
+        }
     ]
 
-# প্রিমিয়াম ডিজাইন ও ভাসমান ইনপুট বক্সের জন্য CSS
 st.markdown("""
     <style>
     #MainMenu {visibility: hidden;}
@@ -65,14 +67,12 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# হেডার ও ভয়েস সিলেক্টর
 col1, col2 = st.columns([5, 1])
 with col1:
     st.markdown("<h3 style='color: #1f1f1f; margin-bottom: 0; font-weight: 600;'>✨ Gemini AI</h3>", unsafe_allow_html=True)
 with col2:
     voice_gender = st.selectbox("ভয়েস", ["Female", "Male"], label_visibility="collapsed")
 
-# আপনার অ্যাডস্টার্নার Smartlink ব্যানার
 ad_url = "https://www.profitableratecpmnetwork.com/txpfccym?key=16ed7712c3ae7b7b8d90efb5c53300b3"
 st.markdown(f"""
     <a href="{ad_url}" target="_blank" style="text-decoration: none;">
@@ -82,7 +82,6 @@ st.markdown(f"""
     </a>
 """, unsafe_allow_html=True)
 
-# চ্যাট হিস্ট্রি এবং এআই উত্তরের নিচে পারফেক্ট ভয়েস বাটন সিস্টেম
 for i, message in enumerate(st.session_state.messages):
     if message["role"] != "system":
         with st.chat_message(message["role"]):
@@ -105,14 +104,11 @@ for i, message in enumerate(st.session_state.messages):
                         alert('আপনার ব্রাউজার ভয়েস সাপোর্ট করে না।');
                         return;
                     }}
-                    
                     window.speechSynthesis.cancel();
-                    
                     var textToSpeak = {safe_text};
                     var msg = new SpeechSynthesisUtterance(textToSpeak);
                     msg.lang = 'bn-IN';
                     msg.rate = 0.95;
-                    
                     var voices = window.speechSynthesis.getVoices();
                     for(var v = 0; v < voices.length; v++) {{
                         if(voices[v].name.toLowerCase().includes('{selected_voice_filter}') || voices[v].lang.includes('bn')) {{
@@ -120,34 +116,28 @@ for i, message in enumerate(st.session_state.messages):
                             break;
                         }}
                     }}
-                    
                     var btn = document.getElementById('speaker_btn_{i}');
-                    
                     msg.onstart = function() {{
                         btn.style.background = '#fce8e6';
                         btn.style.color = '#c5221f';
                         btn.innerHTML = '🔊 বলছি...';
                     }};
-                    
                     msg.onend = function() {{
                         btn.style.background = '#e8f0fe';
                         btn.style.color = '#1a73e8';
                         btn.innerHTML = '🔊 ভয়েস শুনুন';
                     }};
-                    
                     msg.onerror = function() {{
                         btn.style.background = '#e8f0fe';
                         btn.style.color = '#1a73e8';
                         btn.innerHTML = '🔊 ভয়েস শুনুন';
                     }};
-                    
                     window.speechSynthesis.speak(msg);
                 }}
                 </script>
                 """
                 st.markdown(voice_button_html, unsafe_allow_html=True)
 
-# ইউজার ইনপুট ও এআই রেসপন্স
 if prompt := st.chat_input("Gemini-কে কিছু জিজ্ঞাসা করুন..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
