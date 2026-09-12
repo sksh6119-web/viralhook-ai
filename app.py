@@ -44,17 +44,22 @@ st.markdown("""
     
     .stChatInput {
         position: fixed !important;
-        bottom: 20px !important;
+        bottom: 25px !important;
         left: 50% !important;
         transform: translateX(-50%) !important;
-        width: 90% !important;
+        width: 85% !important;
         max-width: 800px !important;
+        background: #ffffff !important;
+        border-radius: 32px !important;
+        padding: 6px 16px !important;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08) !important;
+        border: 1px solid #dadce0 !important;
         z-index: 99999 !important;
     }
     
     .block-container {
         padding-top: 20px !important;
-        padding-bottom: 130px !important;
+        padding-bottom: 140px !important;
         max-width: 850px !important;
     }
     </style>
@@ -82,6 +87,7 @@ for i, message in enumerate(st.session_state.messages):
             
             if message["role"] == "assistant":
                 safe_text = json.dumps(message["content"])
+                selected_filter = "female" if voice_gender == "Female" else "male"
                 
                 voice_html = f"""
                 <div style="display: flex; justify-content: flex-end; margin-top: 14px; border-top: 1px solid #f1f3f4; padding-top: 10px;">
@@ -103,6 +109,14 @@ for i, message in enumerate(st.session_state.messages):
                     var utterance = new SpeechSynthesisUtterance(textToRead);
                     utterance.lang = 'bn-IN';
                     utterance.rate = 0.95;
+                    
+                    var voices = window.speechSynthesis.getVoices();
+                    for(var k = 0; k < voices.length; k++) {{
+                        if(voices[k].name.toLowerCase().includes('{selected_filter}') || voices[k].lang.includes('bn')) {{
+                            utterance.voice = voices[k];
+                            break;
+                        }}
+                    }}
                     
                     var btnElem = document.getElementById('voice_btn_{i}');
                     
@@ -133,13 +147,15 @@ if prompt := st.chat_input("Gemini-কে কিছু জিজ্ঞাসা 
         with st.spinner("উত্তর তৈরি হচ্ছে..."):
             try:
                 res = client.chat.completions.create(
-                    model="llama-3.3-70b-versatile",
+                    model="openai/gpt-oss-20b",
                     messages=[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
-                    temperature=0.7
+                    temperature=0.7,
+                    tool_choice="none"
                 )
                 reply = res.choices[0].message.content
                 st.markdown(reply)
                 st.session_state.messages.append({"role": "assistant", "content": reply})
+                st.rerun()
 
             except Exception as err:
                 st.error(f"ত্রুটি ঘটেছে: {err}")
