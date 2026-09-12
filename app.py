@@ -1,326 +1,172 @@
 import streamlit as st
-import streamlit.components.v1 as components
+from groq import Groq
+import json
 
 st.set_page_config(page_title="Gemini AI Assistant", page_icon="✨", layout="wide")
 
-html_code = """
-<!DOCTYPE html>
-<html lang="bn">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gemini AI Assistant</title>
+try:
+    client = Groq(api_key=st.secrets["GROQ_API_KEY"])
+except Exception as e:
+    st.error(f"API Key error: {e}")
+    st.stop()
+
+if "messages" not in st.session_state:
+    st.session_state.messages = [
+        {"role": "system", "content": "You are a supremely knowledgeable, wise, and incredibly friendly AI companion. You have access to all information in the universe and can answer any question accurately and instantly. Always use extremely polite, decent, respectful, and sweet language in Bengali. Never use any harsh, inappropriate, or bad words. When greeted like 'Hi' or 'Hello', warmly and affectionately ask how the user is doing, what's up, and offer a friendly chat just like a caring best friend."}
+    ]
+
+# প্রিমিয়াম ডিজাইন ও ভাসমান ইনপুট বক্সের জন্য CSS
+st.markdown("""
     <style>
-        * { box-sizing: border-box; }
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100vh;
-            background-color: #f0f4f9;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 24px;
-            background: #ffffff;
-            border-bottom: 1px solid #e1e6ed;
-            width: 100%;
-            flex-shrink: 0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-        }
-        h2 {
-            margin: 0;
-            color: #1f1f1f;
-            font-size: 22px;
-            font-weight: 600;
-        }
-        select {
-            padding: 8px 14px;
-            border-radius: 12px;
-            border: 1px solid #dcdfe5;
-            background: #f8f9fa;
-            font-size: 14px;
-            outline: none;
-            font-weight: 500;
-            cursor: pointer;
-        }
-        .ad-banner {
-            background: linear-gradient(135deg, #1a73e8, #34a853);
-            color: white;
-            padding: 12px 20px;
-            text-align: center;
-            font-size: 15px;
-            font-weight: 600;
-            text-decoration: none;
-            display: block;
-            width: 100%;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-            flex-shrink: 0;
-        }
-        #chat-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 24px;
-            padding-bottom: 140px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            width: 100%;
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        .message {
-            max-width: 85%;
-            padding: 18px 22px;
-            border-radius: 24px;
-            font-size: 17px;
-            line-height: 1.6;
-            word-wrap: break-word;
-        }
-        .user-message {
-            background: #d3e3fd;
-            color: #041e49;
-            align-self: flex-end;
-            border-bottom-right-radius: 6px;
-            font-weight: 500;
-        }
-        .ai-message {
-            background: #ffffff;
-            color: #202124;
-            align-self: flex-start;
-            border-bottom-left-radius: 6px;
-            border: 1px solid #e1e6ed;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
-        }
-        .toolbar {
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            gap: 12px;
-            margin-top: 14px;
-            border-top: 1px solid #f1f3f4;
-            padding-top: 12px;
-        }
-        .speak-btn {
-            background: #e8f0fe;
-            border: 1px solid #d2e3fc;
-            border-radius: 24px;
-            padding: 10px 20px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            color: #1a73e8;
-            transition: all 0.2s ease;
-        }
-        .speak-btn:active {
-            transform: scale(0.95);
-        }
-        /* একদম নিচে চওড়া ভাসমান প্রিমিয়াম ইনপুট বক্স */
-        .input-bar {
-            position: fixed;
-            bottom: 25px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 92%;
-            max-width: 850px;
-            background: #ffffff;
-            border-radius: 36px;
-            padding: 10px 22px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-            border: 1px solid #dcdfe5;
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            z-index: 9999;
-        }
-        .input-bar input {
-            flex: 1;
-            border: none;
-            outline: none;
-            font-size: 17px;
-            padding: 10px;
-            background: transparent;
-            color: #202124;
-        }
-        .input-bar button {
-            background: #1a73e8;
-            border: none;
-            color: white;
-            border-radius: 50%;
-            width: 48px;
-            height: 48px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            flex-shrink: 0;
-            box-shadow: 0 4px 10px rgba(26,115,232,0.3);
-        }
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    
+    .stApp {
+        background-color: #f0f4f9;
+        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+    
+    .stChatMessage {
+        background-color: #ffffff !important;
+        border-radius: 20px !important;
+        padding: 18px 22px !important;
+        margin-bottom: 18px !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        border: 1px solid #e1e6ed !important;
+    }
+    
+    .stChatMessage p {
+        color: #1f1f1f !important;
+        font-size: 17px !important;
+        line-height: 1.6;
+    }
+    
+    .stChatInput {
+        position: fixed !important;
+        bottom: 25px !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        width: 88% !important;
+        max-width: 850px !important;
+        background: #ffffff !important;
+        border-radius: 36px !important;
+        padding: 8px 20px !important;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.12) !important;
+        border: 1px solid #dcdfe5 !important;
+        z-index: 99999 !important;
+    }
+    
+    .block-container {
+        padding-top: 20px !important;
+        padding-bottom: 150px !important;
+        max-width: 900px !important;
+    }
     </style>
-</head>
-<body>
+""", unsafe_allow_html=True)
 
-    <header>
-        <h2>✨ Gemini AI</h2>
-        <select id="voiceGender">
-            <option value="Female">Female Voice</option>
-            <option value="Male">Male Voice</option>
-        </select>
-    </header>
+# হেডার ও ভয়েস সিলেক্টর
+col1, col2 = st.columns([5, 1])
+with col1:
+    st.markdown("<h3 style='color: #1f1f1f; margin-bottom: 0; font-weight: 600;'>✨ Gemini AI</h3>", unsafe_allow_html=True)
+with col2:
+    voice_gender = st.selectbox("ভয়েস", ["Female", "Male"], label_visibility="collapsed")
 
-    <a href="https://www.profitableratecpmnetwork.com/txpfccym?key=16ed7712c3ae7b7b8d90efb5c53300b3" target="_blank" class="ad-banner">
-        🚀 বিশেষ অফার ও আপডেট দেখতে এখানে ক্লিক করুন! (Sponsored)
-    </a>
-
-    <div id="chat-container">
-        <div class="message ai-message">
-            স্বাগতম! 😊 যারা পড়তে পারেন না, তারা নিচের ডানপাশের "🔊 ভয়েস শুনুন" বাটনে ক্লিক করলেই আমি পুরো লেখাটি মুখে পড়ে শোনাবো। বলুন, আপনাকে কীভাবে সাহায্য করতে পারি? ✨
-            <div class="toolbar">
-                <button class="speak-btn" onclick="toggleSpeech(this, 'স্বাগতম! 😊 যারা পড়তে পারেন না, তারা নিচের ডানপাশের ভয়েস শুনুন বাটনে ক্লিক করলেই আমি পুরো লেখাটি মুখে পড়ে শোনাবো। বলুন, আপনাকে কীভাবে সাহায্য করতে পারি?')">🔊 ভয়েস শুনুন</button>
-            </div>
+# আপনার অ্যাডস্টার্নার Smartlink ব্যানার
+ad_url = "https://www.profitableratecpmnetwork.com/txpfccym?key=16ed7712c3ae7b7b8d90efb5c53300b3"
+st.markdown(f"""
+    <a href="{ad_url}" target="_blank" style="text-decoration: none;">
+        <div style="background: linear-gradient(135deg, #1a73e8, #34a853); color: white; padding: 12px 20px; border-radius: 14px; text-align: center; font-size: 15px; font-weight: 600; margin: 10px 0 20px 0; box-shadow: 0 3px 10px rgba(0,0,0,0.1);">
+            🚀 বিশেষ অফার ও আপডেট দেখতে এখানে ক্লিক করুন! (Sponsored)
         </div>
-    </div>
+    </a>
+""", unsafe_allow_html=True)
 
-    <div class="input-bar">
-        <input type="text" id="userInput" placeholder="Gemini-কে কিছু জিজ্ঞাসা করুন..." onkeypress="handleKeyPress(event)">
-        <button onclick="sendMessage()">⬆</button>
-    </div>
-
-    <script>
-        // ব্রাউজারের ভয়েস ইনিশিয়ালাইজেশন নিশ্চিত করা
-        let voicesLoaded = false;
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.onvoiceschanged = function() {
-                voicesLoaded = true;
-            };
-        }
-
-        function appendMessage(text, sender) {
-            const chatContainer = document.getElementById('chat-container');
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `message ${sender === 'user' ? 'user-message' : 'ai-message'}`;
-            msgDiv.innerHTML = text;
-            chatContainer.appendChild(msgDiv);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-        }
-
-        function sendMessage() {
-            const input = document.getElementById('userInput');
-            const text = input.value.trim();
-            if (!text) return;
-
-            // ইউজারের মেসেজ যোগ করা
-            const userDiv = document.createElement('div');
-            userDiv.className = 'message user-message';
-            userDiv.innerText = text;
-            const chatContainer = document.getElementById('chat-container');
-            chatContainer.appendChild(userDiv);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
+# চ্যাট হিস্ট্রি প্রদর্শন এবং এআই উত্তরের নিচে সরাসরি কার্যকরী ভয়েস প্লে বাটন
+for i, message in enumerate(st.session_state.messages):
+    if message["role"] != "system":
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
             
-            input.value = '';
-
-            // এআই উত্তর জেনারেট করা
-            setTimeout(() => {
-                const aiResponse = "আপনার কথাটি আমি বুঝতে পেরেছি। এটি অত্যন্ত চমৎকার একটি বিষয় এবং আমি আপনাকে এতে পূর্ণ সহযোগিতা করব।";
-                const safeTextJson = JSON.stringify(aiResponse);
+            if message["role"] == "assistant":
+                safe_text = json.dumps(message["content"])
+                selected_voice_filter = "female" if voice_gender == "Female" else "male"
                 
-                const aiHTML = `${aiResponse}
-                    <div class="toolbar">
-                        <button class="speak-btn" onclick="toggleSpeech(this, ${safeTextJson})">🔊 ভয়েস শুনুন</button>
-                    </div>`;
+                # শক্তিশালী এবং গ্যারান্টিযুক্ত ভয়েস প্লে স্ক্রিপ্ট
+                voice_button_html = f"""
+                <div style="margin-top: 12px; border-top: 1px solid #f1f3f4; padding-top: 10px; display: flex; justify-content: flex-end;">
+                    <button id="speaker_btn_{i}" onclick="speakText_{i}()" style="background: #e8f0fe; border: 1px solid #d2e3fc; border-radius: 24px; padding: 8px 18px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; color: #1a73e8;">
+                        🔊 ভয়েস শুনুন
+                    </button>
+                </div>
                 
-                appendMessage(aiHTML, 'ai');
-            }, 500);
-        }
+                <script>
+                function speakText_{i}() {{
+                    if (!('speechSynthesis' in window)) {{
+                        alert('আপনার ব্রাউজার ভয়েস সাপোর্ট করে না।');
+                        return;
+                    }}
+                    
+                    // আগের সমস্ত চলমান ভয়েস বন্ধ করা
+                    window.speechSynthesis.cancel();
+                    
+                    var textToSpeak = {safe_text};
+                    var msg = new SpeechSynthesisUtterance(textToSpeak);
+                    msg.lang = 'bn-IN';
+                    msg.rate = 0.95;
+                    
+                    var voices = window.speechSynthesis.getVoices();
+                    for(var v = 0; v < voices.length; v++) {{
+                        if(voices[v].name.toLowerCase().includes('{selected_voice_filter}') || voices[v].lang.includes('bn')) {{
+                            msg.voice = voices[v];
+                            break;
+                        }}
+                    }}
+                    
+                    var btn = document.getElementById('speaker_btn_{i}');
+                    
+                    msg.onstart = function() {{
+                        btn.style.background = '#fce8e6';
+                        btn.style.color = '#c5221f';
+                        btn.innerHTML = '🔊 বলছি...';
+                    }};
+                    
+                    msg.onend = function() {{
+                        btn.style.background = '#e8f0fe';
+                        btn.style.color = '#1a73e8';
+                        btn.innerHTML = '🔊 ভয়েস শুনুন';
+                    }};
+                    
+                    msg.onerror = function() {{
+                        btn.style.background = '#e8f0fe';
+                        btn.style.color = '#1a73e8';
+                        btn.innerHTML = '🔊 ভয়েস শুনুন';
+                    }};
+                    
+                    window.speechSynthesis.speak(msg);
+                }}
+                </script>
+                """
+                st.markdown(voice_button_html, unsafe_allow_html=True)
 
-        function handleKeyPress(e) {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
-        }
+# ইউজার ইনপুট
+if prompt := st.chat_input("Gemini-কে কিছু জিজ্ঞাসা করুন..."):
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
 
-        // ১০০% পারফেক্ট টগল ভয়েস সিস্টেম
-        let activeUtterance = null;
-        let activeBtn = null;
+    with st.chat_message("assistant"):
+        with st.spinner("উত্তর তৈরি হচ্ছে..."):
+            try:
+                res = client.chat.completions.create(
+                    model="openai/gpt-oss-20b",
+                    messages=[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
+                    temperature=0.5
+                )
+                reply = res.choices[0].message.content
+                st.markdown(reply)
+                st.session_state.messages.append({"role": "assistant", "content": reply})
+                st.rerun()
 
-        function toggleSpeech(btn, text) {
-            if (!('speechSynthesis' in window)) {
-                alert('আপনার ব্রাউজার ভয়েস সাপোর্ট করে না।');
-                return;
-            }
-
-            // যদি ইতিমধ্যে কোনো ভয়েস চালু থাকে এবং একই বাটনে ক্লিক করা হয়, তবে বন্ধ হবে
-            if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
-                window.speechSynthesis.cancel();
-                
-                if (activeBtn) {
-                    activeBtn.style.background = '#e8f0fe';
-                    activeBtn.style.color = '#1a73e8';
-                    activeBtn.innerHTML = '🔊 ভয়েস শুনুন';
-                }
-
-                // যদি আলাদা বাটনে ক্লিক করা হয়, তবে আগেরটা বন্ধ করে নতুনটা চালু হবে
-                if (activeBtn === btn) {
-                    activeBtn = null;
-                    return;
-                }
-            }
-
-            var msg = new SpeechSynthesisUtterance(text);
-            msg.lang = 'bn-IN';
-            msg.rate = 0.95;
-            
-            var gender = document.getElementById('voiceGender').value;
-            var filter = gender === 'Female' ? 'female' : 'male';
-            
-            var voices = window.speechSynthesis.getVoices();
-            for(var v = 0; v < voices.length; v++) {
-                if(voices[v].name.toLowerCase().includes(filter) || voices[v].lang.includes('bn')) {
-                    msg.voice = voices[v];
-                    break;
-                }
-            }
-
-            activeBtn = btn;
-            activeUtterance = msg;
-
-            msg.onend = function() {
-                if (activeBtn) {
-                    activeBtn.style.background = '#e8f0fe';
-                    activeBtn.style.color = '#1a73e8';
-                    activeBtn.innerHTML = '🔊 ভয়েস শুনুন';
-                    activeBtn = null;
-                }
-            };
-
-            msg.onerror = function() {
-                if (activeBtn) {
-                    activeBtn.style.background = '#e8f0fe';
-                    activeBtn.style.color = '#1a73e8';
-                    activeBtn.innerHTML = '🔊 ভয়েস শুনুন';
-                    activeBtn = null;
-                }
-            };
-
-            btn.style.background = '#fce8e6';
-            btn.style.color = '#c5221f';
-            btn.innerHTML = '🔇 বন্ধ করুন';
-            
-            window.speechSynthesis.speak(msg);
-        }
-    </script>
-</body>
-</html>
-"""
-
-components.html(html_code, height=900, scrolling=False)
+            except Exception as err:
+                st.error(f"ত্রুটি ঘটেছে: {err}")
