@@ -1,107 +1,95 @@
 import streamlit as st
-import streamlit.components.v1 as components
 from groq import Groq
 
-# পৃষ্ঠার কনফিগারেশন এবং লেআউট সাজানো
-st.set_page_config(page_title="AI Companion - Saheb", page_icon="✨", layout="centered")
-
-# কাস্টম স্টাইল ও আকর্ষণীয় ডিজাইন
-st.markdown(
-    """
-    <style>
-    .main {
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    }
-    .stChatInput {
-        position: fixed;
-        bottom: 20px;
-        background: white;
-        z-index: 999;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
+# পেজ কনফিগারেশন
+st.set_page_config(
+    page_title="বুদ্ধিদীপ্ত এআই অ্যাসিস্ট্যান্ট",
+    page_icon="✨",
+    layout="centered"
 )
 
-st.title("✨ বুদ্ধিদীপ্ত এআই অ্যাসিস্ট্যান্ট")
-st.caption("আপনার প্রতিটি কথার বুদ্ধিমান ও মিষ্টি উত্তর দিতে আমি প্রস্তুত।")
+# কাস্টম স্টাইল ও ডিজাইন
+st.markdown("""
+    <style>
+    .main-title {
+        text-align: center;
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-top: 10px;
+    }
+    .subtitle {
+        text-align: center;
+        font-size: 1rem;
+        color: #4b5563;
+        margin-bottom: 25px;
+    }
+    .support-btn {
+        display: block;
+        width: fit-content;
+        margin: 0 auto 30px auto;
+        padding: 10px 24px;
+        background-color: #ef4444;
+        color: white;
+        text-align: center;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+    }
+    .support-btn:hover {
+        background-color: #dc2626;
+        color: white;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
-# Adsterra বিজ্ঞাপনের আকর্ষণীয় বাটন
-ad_link = "https://www.profitableratecpmnetwork.com/h7ssyv17p?key=eb8a14de90b0395f65ebf374d7d4ca71"
-button_html = """
-    <div style="text-align: center; margin: 15px 0;">
-        <a href="{}" target="_blank" style="text-decoration: none;">
-            <button style="
-                background: linear-gradient(90deg, #ff4b4b, #ff7676);
-                color: white;
-                padding: 12px 24px;
-                border: none;
-                border-radius: 25px;
-                font-size: 16px;
-                font-weight: bold;
-                cursor: pointer;
-                box-shadow: 0 4px 15px rgba(255, 75, 75, 0.3);
-            ">
-                🎁 Support Us / Check Offer
-            </button>
-        </a>
-    </div>
-"""
-st.markdown(button_html.format(ad_link), unsafe_allow_html=True)
+# হেডার সেকশন
+st.markdown('<div class="main-title">✨ বুদ্ধিদীপ্ত এআই অ্যাসিস্ট্যান্ট</div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle">আপনার প্রতিটি কথা সুচারু ও নির্ভুলভাবে লিখে দেবো।</div>', unsafe_allow_html=True)
 
-# আপনার প্রদান করা নতুন Groq API Key
-GROQ_API_KEY = "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"
-client = Groq(api_key=GROQ_API_KEY)
+# সাপোর্ট বা অফার বাটন
+st.markdown('<a href="#" class="support-btn">🔥 Support Us / Check Offer</a>', unsafe_allow_html=True)
 
+st.divider()
+
+# Groq ক্লায়েন্ট ইনিশিয়ালাইজেশন
+try:
+    groq_api_key = st.secrets["GROQ_API_KEY"]
+    client = Groq(api_key=groq_api_key)
+except Exception:
+    client = None
+    st.warning("দয়া করে Streamlit Secrets-এ আপনার GROQ_API_KEY যুক্ত করুন।")
+
+# চ্যাট হিস্ট্রি ধরে রাখার জন্য সেশন স্টেট
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# চ্যাট ইতিহাস এবং মিষ্টি ভয়েস বাটন রেন্ডার করা
-for idx, message in enumerate(st.session_state.messages):
+# পূর্বের চ্যাট মেসেজগুলো দেখানো
+for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
-        if message["role"] == "assistant":
-            clean_voice = message["content"].replace('"', '').replace("'", "").replace("\n", " ")
-            if st.button("🔊 মিষ্টি সুরে শুনুন", key=f"speak_{idx}"):
-                js_code = """
-                    <script>
-                        if ('speechSynthesis' in window) {
-                            window.speechSynthesis.cancel();
-                            let msg = new SpeechSynthesisUtterance("{}");
-                            msg.lang = 'bn-IN';
-                            msg.rate = 0.92;  // ধীর ও স্পষ্ট উচ্চারণ
-                            msg.pitch = 1.15; // মিষ্টি ও সুরেলা কণ্ঠস্বর
-                            window.speechSynthesis.speak(msg);
-                        }
-                    </script>
-                """
-                components.html(js_code.format(clean_voice), height=0)
 
-# ব্যবহারকারীর প্রশ্ন ইনপুট নেওয়ার বক্স
+# ব্যবহারকারীর ইনপুট নেওয়া
 if prompt := st.chat_input("আপনার যেকোনো প্রশ্ন বা কথা এখানে লিখুন..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
+    if client:
+        try:
+            chat_completion = client.chat.completions.create(
+                messages=[
+                    {"role": m["role"], "content": m["content"]}
+                    for m in st.session_state.messages
+                ],
+                model="llama3-70b-8192",
+            )
+            response = chat_completion.choices[0].message.content
+        except Exception as e:
+            response = f"দুঃখিত, একটি সমস্যা হয়েছে: {e}"
+    else:
+        response = f"আপনার কথাটি পেয়েছি: '{prompt}'। (এপিআই কি সেট করা নেই)"
+
+    st.session_state.messages.append({"role": "assistant", "content": response})
     with st.chat_message("assistant"):
-        with st.spinner("গভীরভাবে ভেবে সুন্দর উত্তর তৈরি করছি..."):
-            try:
-                # এআই-এর বুদ্ধিমত্তা, ব্যক্তিত্ব ও মিষ্টি স্বভাবের প্রম্পট
-                system_prompt = (
-                    "You are an exceptionally intelligent, wise, sweet, and warm AI companion. "
-                    "You know your creator is Saheb. Always greet Saheb with profound respect, affection, and warmth. "
-                    "Provide deep, accurate, thoughtful, and natural responses in Bengali to any topic or question asked, "
-                    "empowering the user with wisdom and clarity."
-                )
-                chat_completion = client.chat.completions.create(
-                    messages=[
-                        {"role": "system", "content": system_prompt},
-                        *[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages]
-                    ],
-                    model="llama-3.1-8b-instant",
-                )
-                response_text = chat_completion.choices[0].message.content
-                st.markdown(response_text)
-                st.session_state.messages.append({"role": "assistant", "content": response_text})
-            except Exception as e:
-                st.error(f"ত্রুটি: {e}")
+        st.markdown(response)
