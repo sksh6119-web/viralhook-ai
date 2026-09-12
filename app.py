@@ -1,6 +1,7 @@
 import streamlit as st
 from groq import Groq
-import json
+from gtts import gTTS
+import os
 
 st.set_page_config(page_title="Gemini AI Assistant", page_icon="✨", layout="wide")
 
@@ -12,8 +13,8 @@ except Exception as e:
 
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "system", "content": "You are Gemini AI. Detect the user's language automatically and reply fluently in that exact language. Be polite and helpful."},
-        {"role": "assistant", "content": "নমস্কার! 😊 আমি আপনার জেমিনি সহকারী। নিচে ভয়েস শোনার বাটন আছে, টাচ করলেই মিষ্টি গলায় কথা শুনতে পাবেন। বলুন, কীভাবে সাহায্য করতে পারি?"}
+        {"role": "system", "content": "You are Gemini AI. Always reply accurately and fluently in the user's language. Be polite and helpful."},
+        {"role": "assistant", "content": "নমস্কার! 😊 আমি আপনার জেমিনি সহকারী। নিচে স্পষ্ট অডিও প্লেয়ার দেওয়া আছে, প্লে বাটনে টাচ করলেই কথা শুনতে পাবেন। বলুন, কীভাবে সাহায্য করতে পারি?"}
     ]
 
 st.markdown("""
@@ -69,7 +70,7 @@ col1, col2 = st.columns([5, 1])
 with col1:
     st.markdown("<h3 style='color: #202124; margin-bottom: 0; font-weight: 500;'>✨ Gemini</h3>", unsafe_allow_html=True)
 with col2:
-    voice_gender = st.selectbox("ভয়েস", ["Female", "Male"], label_visibility="collapsed")
+    voice_lang = st.selectbox("ভাষা", ["bn", "hi", "en"], label_visibility="collapsed")
 
 ad_url = "https://www.profitableratecpmnetwork.com/txpfccym?key=16ed7712c3ae7b7b8d90efb5c53300b3"
 st.markdown(f"""
@@ -86,58 +87,14 @@ for i, message in enumerate(st.session_state.messages):
             st.markdown(message["content"])
             
             if message["role"] == "assistant":
-                safe_text = json.dumps(message["content"])
-                selected_filter = "female" if voice_gender == "Female" else "male"
-                
-                # ব্রাউজারের নিজস্ব টেক্সট-টু-স্পিচ বাটন যা সরাসরি মিষ্টি গলায় পড়ে শোনায়
-                voice_html = f"""
-                <div style="display: flex; justify-content: flex-end; margin-top: 14px; border-top: 1px solid #f1f3f4; padding-top: 10px;">
-                    <button id="voice_btn_{i}" onclick="runVoice_{i}()" style="background: #e8f0fe; border: 1px solid #d2e3fc; border-radius: 20px; padding: 8px 18px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; color: #1a73e8;">
-                        🔊 ভয়েস শুনুন
-                    </button>
-                </div>
-                
-                <script>
-                function runVoice_{i}() {{
-                    if (!('speechSynthesis' in window)) {{
-                        alert('আপনার ব্রাউজার ভয়েস সাপোর্ট করে না।');
-                        return;
-                    }}
-                    
-                    window.speechSynthesis.cancel();
-                    
-                    var textToRead = {safe_text};
-                    var utterance = new SpeechSynthesisUtterance(textToRead);
-                    utterance.lang = 'bn-IN';
-                    utterance.rate = 0.95;
-                    
-                    var voices = window.speechSynthesis.getVoices();
-                    for(var k = 0; k < voices.length; k++) {{
-                        if(voices[k].name.toLowerCase().includes('{selected_filter}') || voices[k].lang.includes('bn')) {{
-                            utterance.voice = voices[k];
-                            break;
-                        }}
-                    }}
-                    
-                    var btnElem = document.getElementById('voice_btn_{i}');
-                    
-                    utterance.onstart = function() {{
-                        btnElem.style.background = '#fce8e6';
-                        btnElem.style.color = '#c5221f';
-                        btnElem.innerHTML = '🔊 বলছি...';
-                    }};
-                    
-                    utterance.onend = function() {{
-                        btnElem.style.background = '#e8f0fe';
-                        btnElem.style.color = '#1a73e8';
-                        btnElem.innerHTML = '🔊 ভয়েস শুনুন';
-                    }};
-                    
-                    window.speechSynthesis.speak(utterance);
-                }}
-                </script>
-                """
-                st.markdown(voice_html, unsafe_allow_html=True)
+                try:
+                    tts = gTTS(text=message["content"], lang=voice_lang, slow=False)
+                    audio_path = f"voice_audio_{i}.mp3"
+                    tts.save(audio_path)
+                    st.markdown("<div style='margin-top: 8px; font-size: 13px; color: #1a73e8; font-weight: 600;'>🔊 ভয়েস শুনতে নিচের প্লে বাটনে চাপ দিন:</div>", unsafe_allow_html=True)
+                    st.audio(audio_path, format='audio/mp3')
+                except Exception as ex:
+                    st.info("🔊 (অডিও লোড হচ্ছে...)")
 
 if prompt := st.chat_input("Gemini-কে কিছু জিজ্ঞাসা করুন..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
@@ -150,10 +107,18 @@ if prompt := st.chat_input("Gemini-কে কিছু জিজ্ঞাসা 
                 res = client.chat.completions.create(
                     model="openai/gpt-oss-20b",
                     messages=[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
-                    temperature=0.7
+                    temperature=0.7,
+                    tool_choice="none"
                 )
                 reply = res.choices[0].message.content
                 st.markdown(reply)
+                
+                tts = gTTS(text=reply, lang=voice_lang, slow=False)
+                audio_path = f"voice_audio_{len(st.session_state.messages)}.mp3"
+                tts.save(audio_path)
+                st.markdown("<div style='margin-top: 8px; font-size: 13px; color: #1a73e8; font-weight: 600;'>🔊 ভয়েস শুনতে নিচের প্লে বাটনে চাপ দিন:</div>", unsafe_allow_html=True)
+                st.audio(audio_path, format='audio/mp3')
+
                 st.session_state.messages.append({"role": "assistant", "content": reply})
                 st.rerun()
 
