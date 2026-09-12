@@ -2,11 +2,7 @@ import streamlit as st
 from groq import Groq
 import json
 
-st.set_page_config(
-    page_title="Gemini AI Assistant", 
-    page_icon="✨", 
-    layout="wide"
-)
+st.set_page_config(page_title="Gemini AI Assistant", page_icon="✨", layout="wide")
 
 try:
     client = Groq(api_key=st.secrets["GROQ_API_KEY"])
@@ -16,14 +12,8 @@ except Exception as e:
 
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {
-            "role": "system", 
-            "content": "You are Gemini AI. Reply accurately in the user's language."
-        },
-        {
-            "role": "assistant", 
-            "content": "নমস্কার! 😊 আমি আপনার জেমিনি সহকারী। যারা পড়তে পারেন না, তারা নিচের ভয়েস শুনুন বাটনে ক্লিক করলেই আমি পুরো লেখাটি মুখে পড়ে শোনাবো।"
-        }
+        {"role": "system", "content": "You are Gemini AI. Always reply accurately in the user's language. Be polite and friendly."},
+        {"role": "assistant", "content": "নমস্কার! 😊 আমি আপনার জেমিনি সহকারী। যারা পড়তে পারেন না, তারা নিচের '🔊 ভয়েস শুনুন' বাটনে ক্লিক করলেই আমি পুরো লেখাটি মুখে পড়ে শোনাবো। বলুন, আপনাকে কীভাবে সাহায্য করতে পারি?"}
     ]
 
 st.markdown("""
@@ -34,42 +24,42 @@ st.markdown("""
     
     .stApp {
         background-color: #f8f9fa;
-        font-family: sans-serif;
+        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     }
     
     .stChatMessage {
         background-color: #ffffff !important;
-        border-radius: 16px !important;
-        padding: 16px 20px !important;
-        margin-bottom: 16px !important;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        border-radius: 20px !important;
+        padding: 18px 22px !important;
+        margin-bottom: 18px !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.03);
         border: 1px solid #e9ecef !important;
     }
     
     .stChatMessage p {
         color: #202124 !important;
         font-size: 16px !important;
-        line-height: 1.5;
+        line-height: 1.6;
     }
     
     .stChatInput {
         position: fixed !important;
-        bottom: 20px !important;
+        bottom: 25px !important;
         left: 50% !important;
         transform: translateX(-50%) !important;
         width: 85% !important;
         max-width: 800px !important;
         background: #ffffff !important;
-        border-radius: 30px !important;
-        padding: 4px 14px !important;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.08) !important;
+        border-radius: 32px !important;
+        padding: 6px 16px !important;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08) !important;
         border: 1px solid #dadce0 !important;
         z-index: 99999 !important;
     }
     
     .block-container {
         padding-top: 20px !important;
-        padding-bottom: 130px !important;
+        padding-bottom: 140px !important;
         max-width: 850px !important;
     }
     </style>
@@ -77,14 +67,14 @@ st.markdown("""
 
 col1, col2 = st.columns([5, 1])
 with col1:
-    st.markdown("<h3 style='color: #202124; margin-bottom: 0;'>✨ Gemini</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='color: #202124; margin-bottom: 0; font-weight: 500;'>✨ Gemini</h3>", unsafe_allow_html=True)
 with col2:
     voice_gender = st.selectbox("ভয়েস", ["Female", "Male"], label_visibility="collapsed")
 
 ad_url = "https://www.profitableratecpmnetwork.com/txpfccym?key=16ed7712c3ae7b7b8d90efb5c53300b3"
 st.markdown(f"""
     <a href="{ad_url}" target="_blank" style="text-decoration: none;">
-        <div style="background: linear-gradient(135deg, #4285f4, #34a853); color: white; padding: 10px 16px; border-radius: 12px; text-align: center; font-size: 14px; font-weight: 500; margin: 10px 0 20px 0;">
+        <div style="background: linear-gradient(135deg, #4285f4, #34a853); color: white; padding: 10px 16px; border-radius: 12px; text-align: center; font-size: 14px; font-weight: 500; margin: 10px 0 20px 0; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
             🚀 বিশেষ অফার ও আপডেট দেখতে এখানে ক্লিক করুন! (Sponsored)
         </div>
     </a>
@@ -97,50 +87,62 @@ for i, message in enumerate(st.session_state.messages):
             
             if message["role"] == "assistant":
                 safe_text = json.dumps(message["content"])
-                selected_filter = "female" if voice_gender == "Female" else "male"
+                selected_voice_filter = "female" if voice_gender == "Female" else "male"
                 
-                speech_script = f"""
-                <div style="display: flex; justify-content: flex-end; margin-top: 10px; border-top: 1px solid #f1f3f4; padding-top: 6px;">
-                    <button id="audio_btn_{i}" onclick="playTTS_{i}()" style="background: #e8f0fe; border: 1px solid #d2e3fc; border-radius: 20px; padding: 6px 14px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; color: #1a73e8;">
+                sound_html = f"""
+                <div style="display: flex; justify-content: flex-end; margin-top: 14px; border-top: 1px solid #f1f3f4; padding-top: 10px;">
+                    <button id="speaker_btn_{i}" onclick="playAudio_{i}()" style="background: #e8f0fe; border: 1px solid #d2e3fc; border-radius: 20px; padding: 6px 14px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; color: #1a73e8;">
                         🔊 ভয়েস শুনুন
                     </button>
                 </div>
+                
                 <script>
-                function playTTS_{i}() {{
+                function playAudio_{i}() {{
                     if (!('speechSynthesis' in window)) {{
-                        alert('ব্রাউজার ভয়েস সাপোর্ট করে না।');
+                        alert('আপনার ব্রাউজার ভয়েস সাপোর্ট করে না।');
                         return;
                     }}
+                    
                     window.speechSynthesis.cancel();
-                    var textToSpeak = {safe_text};
-                    var utterance = new SpeechSynthesisUtterance(textToSpeak);
-                    utterance.lang = 'bn-IN';
-                    utterance.rate = 0.95;
+                    
+                    var textToRead = {safe_text};
+                    var speech = new SpeechSynthesisUtterance(textToRead);
+                    speech.lang = 'bn-IN';
+                    speech.rate = 0.95;
                     
                     var voices = window.speechSynthesis.getVoices();
-                    for(var v = 0; v < voices.length; v++) {{
-                        if(voices[v].name.toLowerCase().includes('{selected_filter}') || voices[v].lang.includes('bn')) {{
-                            utterance.voice = voices[v];
+                    for(var k = 0; k < voices.length; k++) {{
+                        if(voices[k].name.toLowerCase().includes('{selected_voice_filter}') || voices[k].lang.includes('bn')) {{
+                            speech.voice = voices[k];
                             break;
                         }}
                     }}
                     
-                    var btn = document.getElementById('audio_btn_{i}');
-                    utterance.onstart = function() {{
-                        btn.style.background = '#fce8e6';
-                        btn.style.color = '#c5221f';
-                        btn.innerHTML = '🔊 বলছি...';
+                    var btnElem = document.getElementById('speaker_btn_{i}');
+                    
+                    speech.onstart = function() {{
+                        btnElem.style.background = '#fce8e6';
+                        btnElem.style.color = '#c5221f';
+                        btnElem.innerHTML = '🔊 বলছি...';
                     }};
-                    utterance.onend = function() {{
-                        btn.style.background = '#e8f0fe';
-                        btn.style.color = '#1a73e8';
-                        btn.innerHTML = '🔊 ভয়েস শুনুন';
+                    
+                    speech.onend = function() {{
+                        btnElem.style.background = '#e8f0fe';
+                        btnElem.style.color = '#1a73e8';
+                        btnElem.innerHTML = '🔊 ভয়েস শুনুন';
                     }};
-                    window.speechSynthesis.speak(utterance);
+                    
+                    speech.onerror = function() {{
+                        btnElem.style.background = '#e8f0fe';
+                        btnElem.style.color = '#1a73e8';
+                        btnElem.innerHTML = '🔊 ভয়েস শুনুন';
+                    }};
+                    
+                    window.speechSynthesis.speak(speech);
                 }}
                 </script>
                 """
-                st.markdown(speech_script, unsafe_allow_html=True)
+                st.markdown(sound_html, unsafe_allow_html=True)
 
 if prompt := st.chat_input("Gemini-কে কিছু জিজ্ঞাসা করুন..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
