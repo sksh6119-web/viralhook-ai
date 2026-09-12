@@ -3,13 +3,24 @@ import urllib.request
 import json
 
 st.set_page_config(
-    page_title="AI Assistant",
-    page_icon="🤖",
+    page_title="Gemini-like AI Assistant",
+    page_icon="✨",
     layout="centered"
 )
 
-st.title("🤖 AI Assistant")
-st.write("Ask your questions below.")
+# জেমিনির মতো পরিষ্কার লুক দেওয়ার জন্য কিছু কাস্টম CSS স্টাইল
+st.markdown("""
+    <style>
+    .stChatMessage {
+        border-radius: 15px;
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+st.title("✨ AI Assistant")
+st.write("আপনার যেকোনো প্রশ্ন বা স্ক্রিপ্ট এখানে দিন, আমি জেমিনির মতো সুন্দর ও সাবলীলভাবে উত্তর দেব।")
 
 # Get API key safely from Streamlit Secrets
 try:
@@ -18,13 +29,21 @@ except Exception:
     groq_api_key = None
 
 if "messages" not in st.session_state:
-    st.session_state.messages = []
+    # এখানে সিস্টেম প্রম্পট সেট করা হলো যাতে এআই একদম মানুষের মতো, সাবলীল এবং জেমিনির স্টাইলে কথা বলে
+    st.session_state.messages = [
+        {
+            "role": "system", 
+            "content": "You are a highly intelligent, natural, and helpful AI assistant, similar to Google Gemini. Speak politely, clearly, and engagingly in Bengali (or the user's requested language) so that it feels like a real human conversation, not robotic. Never break character."
+        }
+    ]
 
+# ডিসপ্লে করার সময় শুধু ইউজার এবং অ্যাসিস্ট্যান্টের চ্যাট দেখানোর জন্য (সিস্টেম প্রম্পট লুকিয়ে রাখা ভালো)
 for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+    if message["role"] != "system":
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
 
-if prompt := st.chat_input("Type your message here..."):
+if prompt := st.chat_input("এখানে আপনার বার্তা লিখুন..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
@@ -44,8 +63,9 @@ if prompt := st.chat_input("Type your message here..."):
             ]
 
             payload = {
-                "model": "llama3-70b-8192",
-                "messages": formatted_messages
+                "model": "llama-3.3-70b-versatile",
+                "messages": formatted_messages,
+                "temperature": 0.7
             }
 
             data = json.dumps(payload).encode("utf-8")
@@ -56,9 +76,9 @@ if prompt := st.chat_input("Type your message here..."):
                 response = res_data["choices"][0]["message"]["content"]
 
         except Exception as e:
-            response = f"Error: {e}"
+            response = f"দুঃখিত, একটি সমস্যা হয়েছে: {e}"
     else:
-        response = "API Key is missing in Streamlit Secrets."
+        response = "এপিআই কি (API Key) পাওয়া যায়নি। দয়া করে Streamlit Secrets-এ কি যুক্ত করুন।"
 
     st.session_state.messages.append({"role": "assistant", "content": response})
     with st.chat_message("assistant"):
