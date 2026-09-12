@@ -8,15 +8,15 @@ st.set_page_config(
 )
 
 st.title("✨ AI Assistant")
-st.write("আপনার প্রশ্নের উত্তর পেতে নিচে চ্যাট করুন।")
+st.write("Ask your questions below.")
 
-# Groq client initialization
+# Initialize Groq client safely
 try:
     groq_api_key = st.secrets["GROQ_API_KEY"]
     client = Groq(api_key=groq_api_key)
 except Exception:
     client = None
-    st.error("দয়া করে Streamlit Secrets-এ সঠিক GROQ_API_KEY যুক্ত করুন।")
+    st.error("Please set your GROQ_API_KEY in Streamlit Secrets.")
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -25,7 +25,7 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-if prompt := st.chat_input("আপনার বার্তা এখানে লিখুন..."):
+if prompt := st.chat_input("Type your message here..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
@@ -41,9 +41,9 @@ if prompt := st.chat_input("আপনার বার্তা এখানে �
             )
             response = chat_completion.choices[0].message.content
         except Exception as e:
-            response = f"ত্রুটি দেখা দিয়েছে: {e}"
+            response = f"An error occurred: {str(e)}"
     else:
-        response = "এপিআই কি (API Key) সেট করা নেই।"
+        response = "API Key is not configured properly."
 
     st.session_state.messages.append({"role": "assistant", "content": response})
     with st.chat_message("assistant"):
