@@ -13,7 +13,7 @@ except Exception as e:
 if "messages" not in st.session_state:
     st.session_state.messages = [
         {"role": "system", "content": "You are Gemini AI. Always reply accurately in the user's language. Be polite and friendly."},
-        {"role": "assistant", "content": "নমস্কার! 😊 আমি আপনার জেমিনি সহকারী। যারা পড়তে পারেন না, তাদের জন্য উত্তর আসার সাথেই সাথেই আমি নিজে থেকে মুখে পড়ে শুনিয়ে দেবো। বলুন, আপনাকে কীভাবে সাহায্য করতে পারি?"}
+        {"role": "assistant", "content": "নমস্কার! 😊 আমি আপনার জেমিনি সহকারী। নিচে ভয়েস শোনার বাটন আছে, সেখানে টাচ করলেই মিষ্টি গলায় কথা শুনতে পাবেন। বলুন, কীভাবে সাহায্য করতে পারি?"}
     ]
 
 st.markdown("""
@@ -89,17 +89,21 @@ for i, message in enumerate(st.session_state.messages):
                 safe_text = json.dumps(message["content"])
                 selected_voice_filter = "female" if voice_gender == "Female" else "male"
                 
-                # অটোমেটিক সাউন্ড প্লে করার জন্য জাভাস্ক্রিপ্ট অটো-রান স্ক্রিপ্ট
-                auto_sound_html = f"""
+                # কালকের সেই পরীক্ষিত এবং মিষ্টি ভয়েস আউটপুট স্ক্রিপ্ট
+                voice_html = f"""
                 <div style="display: flex; justify-content: flex-end; margin-top: 14px; border-top: 1px solid #f1f3f4; padding-top: 10px;">
-                    <button id="speaker_btn_{i}" onclick="playAutoAudio_{i}()" style="background: #e8f0fe; border: 1px solid #d2e3fc; border-radius: 20px; padding: 6px 14px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; color: #1a73e8;">
+                    <button id="speaker_btn_{i}" onclick="playAudio_{i}()" style="background: #e8f0fe; border: 1px solid #d2e3fc; border-radius: 20px; padding: 8px 18px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; color: #1a73e8;">
                         🔊 ভয়েস শুনুন
                     </button>
                 </div>
                 
                 <script>
-                function playAutoAudio_{i}() {{
-                    if (!('speechSynthesis' in window)) return;
+                function playAudio_{i}() {{
+                    if (!('speechSynthesis' in window)) {{
+                        alert('ব্রাউজার ভয়েস সাপোর্ট করে না।');
+                        return;
+                    }}
+                    
                     window.speechSynthesis.cancel();
                     
                     var textToRead = {safe_text};
@@ -131,14 +135,9 @@ for i, message in enumerate(st.session_state.messages):
                     
                     window.speechSynthesis.speak(speech);
                 }}
-
-                // পেজ লোড বা নতুন মেসেজ আসার সাথে সাথেই অটোমেটিক ভয়েস চালু হবে
-                setTimeout(function() {{
-                    playAutoAudio_{i}();
-                }}, 500);
                 </script>
                 """
-                st.markdown(auto_sound_html, unsafe_allow_html=True)
+                st.markdown(voice_html, unsafe_allow_html=True)
 
 if prompt := st.chat_input("Gemini-কে কিছু জিজ্ঞাসা করুন..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
