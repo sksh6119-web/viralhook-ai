@@ -1,7 +1,6 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-# পেজ লেআউট পুরো স্ক্রিন জুড়ে করার জন্য
 st.set_page_config(page_title="Gemini AI Assistant", page_icon="✨", layout="wide")
 
 html_code = """
@@ -12,137 +11,143 @@ html_code = """
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gemini AI Assistant</title>
     <style>
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
         body, html {
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100vh;
-            background-color: #f8f9fa;
+            background-color: #f0f4f9;
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            overflow: hidden;
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
         header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 20px;
+            padding: 12px 24px;
             background: #ffffff;
-            border-bottom: 1px solid #e9ecef;
+            border-bottom: 1px solid #e1e6ed;
             width: 100%;
             flex-shrink: 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         }
         h2 {
             margin: 0;
-            color: #202124;
-            font-size: 20px;
-            font-weight: 500;
+            color: #1f1f1f;
+            font-size: 22px;
+            font-weight: 600;
         }
         select {
-            padding: 6px 12px;
+            padding: 8px 14px;
             border-radius: 12px;
-            border: 1px solid #dadce0;
+            border: 1px solid #dcdfe5;
             background: #f8f9fa;
             font-size: 14px;
             outline: none;
+            font-weight: 500;
+            cursor: pointer;
         }
         .ad-banner {
-            background: linear-gradient(135deg, #4285f4, #34a853);
+            background: linear-gradient(135deg, #1a73e8, #34a853);
             color: white;
-            padding: 12px 16px;
+            padding: 12px 20px;
             text-align: center;
             font-size: 15px;
             font-weight: 600;
             text-decoration: none;
             display: block;
             width: 100%;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
             flex-shrink: 0;
         }
         #chat-container {
             flex: 1;
             overflow-y: auto;
-            padding: 20px;
-            padding-bottom: 120px;
+            padding: 24px;
+            padding-bottom: 140px;
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 20px;
             width: 100%;
             max-width: 900px;
             margin: 0 auto;
         }
         .message {
             max-width: 85%;
-            padding: 16px 20px;
-            border-radius: 20px;
-            font-size: 16px;
+            padding: 18px 22px;
+            border-radius: 24px;
+            font-size: 17px;
             line-height: 1.6;
             word-wrap: break-word;
         }
         .user-message {
-            background: #e8f0fe;
-            color: #202124;
+            background: #d3e3fd;
+            color: #041e49;
             align-self: flex-end;
-            border-bottom-right-radius: 4px;
+            border-bottom-right-radius: 6px;
+            font-weight: 500;
         }
         .ai-message {
             background: #ffffff;
             color: #202124;
             align-self: flex-start;
-            border-bottom-left-radius: 4px;
-            border: 1px solid #e9ecef;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+            border-bottom-left-radius: 6px;
+            border: 1px solid #e1e6ed;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
         }
         .toolbar {
             display: flex;
             justify-content: flex-end;
             align-items: center;
             gap: 12px;
-            margin-top: 12px;
+            margin-top: 14px;
             border-top: 1px solid #f1f3f4;
-            padding-top: 10px;
+            padding-top: 12px;
         }
         .speak-btn {
             background: #e8f0fe;
             border: 1px solid #d2e3fc;
-            border-radius: 20px;
-            padding: 8px 16px;
+            border-radius: 24px;
+            padding: 10px 20px;
             cursor: pointer;
             display: flex;
             align-items: center;
             gap: 8px;
-            font-size: 15px;
+            font-size: 16px;
             font-weight: 600;
             color: #1a73e8;
+            transition: all 0.2s ease;
         }
-        /* পুরো স্ক্রিন জুড়ে নিচে চওড়া ভাসমান ইনপুট বক্স */
+        .speak-btn:active {
+            transform: scale(0.95);
+        }
+        /* একদম নিচে চওড়া ভাসমান প্রিমিয়াম ইনপুট বক্স */
         .input-bar {
             position: fixed;
-            bottom: 20px;
+            bottom: 25px;
             left: 50%;
             transform: translateX(-50%);
             width: 92%;
             max-width: 850px;
             background: #ffffff;
-            border-radius: 32px;
-            padding: 10px 20px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-            border: 1px solid #dadce0;
+            border-radius: 36px;
+            padding: 10px 22px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            border: 1px solid #dcdfe5;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 14px;
             z-index: 9999;
         }
         .input-bar input {
             flex: 1;
             border: none;
             outline: none;
-            font-size: 16px;
-            padding: 8px;
+            font-size: 17px;
+            padding: 10px;
             background: transparent;
             color: #202124;
         }
@@ -151,14 +156,15 @@ html_code = """
             border: none;
             color: white;
             border-radius: 50%;
-            width: 44px;
-            height: 44px;
+            width: 48px;
+            height: 48px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
+            font-size: 20px;
             flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(26,115,232,0.3);
         }
     </style>
 </head>
@@ -178,9 +184,9 @@ html_code = """
 
     <div id="chat-container">
         <div class="message ai-message">
-            হ্যালো! 😊 আমি আপনার এআই সহকারী। যারা পড়তে পারেন না বা শুনতে চান, তারা ডানপাশের "ভয়েস শুনুন" বাটনে ক্লিক করলেই আমি পুরো লেখা মুখে পড়ে শোনাবো! ✨
+            স্বাগতম! 😊 যারা পড়তে পারেন না, তারা নিচের ডানপাশের "🔊 ভয়েস শুনুন" বাটনে ক্লিক করলেই আমি পুরো লেখাটি মুখে পড়ে শোনাবো। বলুন, আপনাকে কীভাবে সাহায্য করতে পারি? ✨
             <div class="toolbar">
-                <button class="speak-btn" onclick="toggleSpeech(this, 'হ্যালো! 😊 আমি আপনার এআই সহকারী। যারা পড়তে পারেন না বা শুনতে চান, তারা ডানপাশের ভয়েস শুনুন বাটনে ক্লিক করলেই আমি পুরো লেখা মুখে পড়ে শোনাবো!')">🔊 ভয়েস শুনুন</button>
+                <button class="speak-btn" onclick="toggleSpeech(this, 'স্বাগতম! 😊 যারা পড়তে পারেন না, তারা নিচের ডানপাশের ভয়েস শুনুন বাটনে ক্লিক করলেই আমি পুরো লেখাটি মুখে পড়ে শোনাবো। বলুন, আপনাকে কীভাবে সাহায্য করতে পারি?')">🔊 ভয়েস শুনুন</button>
             </div>
         </div>
     </div>
@@ -191,17 +197,19 @@ html_code = """
     </div>
 
     <script>
+        // ব্রাউজারের ভয়েস ইনিশিয়ালাইজেশন নিশ্চিত করা
+        let voicesLoaded = false;
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = function() {
+                voicesLoaded = true;
+            };
+        }
+
         function appendMessage(text, sender) {
             const chatContainer = document.getElementById('chat-container');
             const msgDiv = document.createElement('div');
             msgDiv.className = `message ${sender === 'user' ? 'user-message' : 'ai-message'}`;
-            
-            if (sender === 'user') {
-                msgDiv.innerText = text;
-            } else {
-                msgDiv.innerHTML = text;
-            }
-            
+            msgDiv.innerHTML = text;
             chatContainer.appendChild(msgDiv);
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
@@ -211,19 +219,28 @@ html_code = """
             const text = input.value.trim();
             if (!text) return;
 
-            appendMessage(text, 'user');
+            // ইউজারের মেসেজ যোগ করা
+            const userDiv = document.createElement('div');
+            userDiv.className = 'message user-message';
+            userDiv.innerText = text;
+            const chatContainer = document.getElementById('chat-container');
+            chatContainer.appendChild(userDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
             input.value = '';
 
             // এআই উত্তর জেনারেট করা
-            const aiResponse = "আপনার প্রশ্নের উত্তর দেওয়া হলো। এটি অত্যন্ত চমৎকার একটি বিষয়!";
-            const safeTextJson = JSON.stringify(aiResponse);
-            
-            const aiHTML = `${aiResponse}
-                <div class="toolbar">
-                    <button class="speak-btn" onclick="toggleSpeech(this, ${safeTextJson})">🔊 ভয়েস শুনুন</button>
-                </div>`;
-            
-            appendMessage(aiHTML, 'ai');
+            setTimeout(() => {
+                const aiResponse = "আপনার কথাটি আমি বুঝতে পেরেছি। এটি অত্যন্ত চমৎকার একটি বিষয় এবং আমি আপনাকে এতে পূর্ণ সহযোগিতা করব।";
+                const safeTextJson = JSON.stringify(aiResponse);
+                
+                const aiHTML = `${aiResponse}
+                    <div class="toolbar">
+                        <button class="speak-btn" onclick="toggleSpeech(this, ${safeTextJson})">🔊 ভয়েস শুনুন</button>
+                    </div>`;
+                
+                appendMessage(aiHTML, 'ai');
+            }, 500);
         }
 
         function handleKeyPress(e) {
@@ -232,19 +249,31 @@ html_code = """
             }
         }
 
+        // ১০০% পারফেক্ট টগল ভয়েস সিস্টেম
+        let activeUtterance = null;
+        let activeBtn = null;
+
         function toggleSpeech(btn, text) {
             if (!('speechSynthesis' in window)) {
                 alert('আপনার ব্রাউজার ভয়েস সাপোর্ট করে না।');
                 return;
             }
 
-            // যদি ইতিমধ্যে কথা বলতে থাকে তবে থামিয়ে দেবো
-            if (window.speechSynthesis.speaking) {
+            // যদি ইতিমধ্যে কোনো ভয়েস চালু থাকে এবং একই বাটনে ক্লিক করা হয়, তবে বন্ধ হবে
+            if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
                 window.speechSynthesis.cancel();
-                btn.style.background = '#e8f0fe';
-                btn.style.color = '#1a73e8';
-                btn.innerHTML = '🔊 ভয়েস শুনুন';
-                return;
+                
+                if (activeBtn) {
+                    activeBtn.style.background = '#e8f0fe';
+                    activeBtn.style.color = '#1a73e8';
+                    activeBtn.innerHTML = '🔊 ভয়েস শুনুন';
+                }
+
+                // যদি আলাদা বাটনে ক্লিক করা হয়, তবে আগেরটা বন্ধ করে নতুনটা চালু হবে
+                if (activeBtn === btn) {
+                    activeBtn = null;
+                    return;
+                }
             }
 
             var msg = new SpeechSynthesisUtterance(text);
@@ -262,10 +291,25 @@ html_code = """
                 }
             }
 
+            activeBtn = btn;
+            activeUtterance = msg;
+
             msg.onend = function() {
-                btn.style.background = '#e8f0fe';
-                btn.style.color = '#1a73e8';
-                btn.innerHTML = '🔊 ভয়েস শুনুন';
+                if (activeBtn) {
+                    activeBtn.style.background = '#e8f0fe';
+                    activeBtn.style.color = '#1a73e8';
+                    activeBtn.innerHTML = '🔊 ভয়েস শুনুন';
+                    activeBtn = null;
+                }
+            };
+
+            msg.onerror = function() {
+                if (activeBtn) {
+                    activeBtn.style.background = '#e8f0fe';
+                    activeBtn.style.color = '#1a73e8';
+                    activeBtn.innerHTML = '🔊 ভয়েস শুনুন';
+                    activeBtn = null;
+                }
             };
 
             btn.style.background = '#fce8e6';
@@ -279,5 +323,4 @@ html_code = """
 </html>
 """
 
-# Streamlit কম্পোনেন্টে পুরো স্ক্রিন হাইট (850px) দিয়ে রেন্ডার করা
-components.html(html_code, height=850, scrolling=False)
+components.html(html_code, height=900, scrolling=False)
