@@ -1,6 +1,6 @@
 import streamlit as st
-import urllib.request
 import json
+import requests
 
 st.set_page_config(
     page_title="AI Assistant",
@@ -43,23 +43,22 @@ if prompt := st.chat_input("আপনার বার্তা লিখুন..
                 "Content-Type": "application/json"
             }
 
-            formatted_messages = [
-                {"role": x["role"], "content": x["content"]}
-                for x in st.session_state.messages
-            ]
-
             payload = {
                 "model": "llama-3.3-70b-versatile",
-                "messages": formatted_messages,
+                "messages": [
+                    {"role": x["role"], "content": x["content"]}
+                    for x in st.session_state.messages
+                ],
                 "temperature": 0.7
             }
 
-            data = json.dumps(payload).encode("utf-8")
-            req = urllib.request.Request(url, data=data, headers=headers, method="POST")
-
-            with urllib.request.urlopen(req) as response_obj:
-                res_data = json.loads(response_obj.read().decode("utf-8"))
+            res = requests.post(url, headers=headers, json=payload)
+            res_data = res.json()
+            
+            if "choices" in res_data:
                 response = res_data["choices"][0]["message"]["content"]
+            else:
+                response = f"API Error: {res_data}"
 
         except Exception as e:
             response = f"দুঃখিত, একটি সমস্যা হয়েছে: {e}"
@@ -69,4 +68,3 @@ if prompt := st.chat_input("আপনার বার্তা লিখুন..
     st.session_state.messages.append({"role": "assistant", "content": response})
     with st.chat_message("assistant"):
         st.markdown(response)
-
