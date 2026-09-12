@@ -4,11 +4,11 @@ import json
 
 st.set_page_config(
     page_title="AI Assistant",
-    page_icon="✨",
+    page_icon="🤖",
     layout="centered"
 )
 
-st.title("✨ AI Assistant")
+st.title("🤖 AI Assistant")
 st.write("Ask your questions below.")
 
 # Get API key safely from Streamlit Secrets
@@ -32,35 +32,34 @@ if prompt := st.chat_input("Type your message here..."):
     if groq_api_key:
         try:
             url = "https://api.groq.com/openai/v1/chat/completions"
-            
+
             headers = {
                 "Authorization": f"Bearer {groq_api_key}",
                 "Content-Type": "application/json"
             }
-            
+
             formatted_messages = [
-                {"role": m["role"], "content": m["content"]}
-                for m in st.session_state.messages
+                {"role": x["role"], "content": x["content"]}
+                for x in st.session_state.messages
             ]
-            
+
             payload = {
                 "model": "llama3-70b-8192",
                 "messages": formatted_messages
             }
-            
+
             data = json.dumps(payload).encode("utf-8")
             req = urllib.request.Request(url, data=data, headers=headers, method="POST")
-            
+
             with urllib.request.urlopen(req) as response_obj:
                 res_data = json.loads(response_obj.read().decode("utf-8"))
                 response = res_data["choices"][0]["message"]["content"]
-                
+
         except Exception as e:
-            response = f"Error: {str(e)}"
+            response = f"Error: {e}"
     else:
         response = "API Key is missing in Streamlit Secrets."
 
     st.session_state.messages.append({"role": "assistant", "content": response})
     with st.chat_message("assistant"):
         st.markdown(response)
-
