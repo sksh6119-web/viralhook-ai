@@ -1,7 +1,7 @@
 import streamlit as st
 from groq import Groq
 
-# পেজ কনফিগারেশন ও জেমিনির মতো আধুনিক লুকের জন্য ফুল কাস্টম CSS ও HTML
+# পেজ সেটআপ (ওয়াইড লেআউট)
 st.set_page_config(page_title="Gemini AI Assistant", page_icon="✨", layout="wide")
 
 try:
@@ -10,77 +10,97 @@ except Exception as e:
     st.error(f"API Key error: {e}")
     st.stop()
 
+# সিস্টেম প্রম্পট এবং চ্যাট হিস্ট্রি ইনিশিয়ালাইজেশন
 if "messages" not in st.session_state:
     st.session_state.messages = [
         {"role": "system", "content": "You are a supremely knowledgeable, wise, and incredibly friendly AI companion. You have access to all information in the universe and can answer any question accurately and instantly. Always use extremely polite, decent, respectful, and sweet language in Bengali. Never use any harsh, inappropriate, or bad words. When greeted like 'Hi' or 'Hello', warmly and affectionately ask how the user is doing, what's up, and offer a friendly chat just like a caring best friend."}
     ]
 
-# জেমিনির মতো চওড়া, ভাসমান ইনপুট বক্স এবং স্টাইলিশ চ্যাট ডিজাইন সিএসএস
+# জেমিনির মতো প্রিমিয়াম, মডার্ন এবং ফ্লোটিং ইউআই ডিজাইন (CSS)
 st.markdown("""
     <style>
-    /* ডিফল্ট হেডার ও ফুটার হাইড করা */
+    /* ডিফল্ট হেডার ও ফুটার লুকিয়ে ফেলা */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
     
-    /* মূল ব্যাকগ্রাউন্ড ও ফন্ট */
+    /* পেজের ব্যাকগ্রাউন্ড ও কালার টোন */
     .stApp {
-        background-color: #ffffff;
+        background-color: #f0f4f9;
+        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     }
     
-    /* চ্যাট মেসেজ বক্সগুলোকে জেমিনির মতো রাউন্ড ও সুন্দর করা */
+    /* চ্যাট মেসেজ কন্টেইনার স্টাইল */
     .stChatMessage {
-        background-color: #f0f4f9 !important;
+        background-color: #ffffff !important;
         border-radius: 20px !important;
-        padding: 15px !important;
-        margin-bottom: 12px !important;
-        border: none !important;
+        padding: 16px 20px !important;
+        margin-bottom: 16px !important;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        border: 1px solid #e1e6ed !important;
     }
     
-    /* ইনপুট বক্সকে জেমিনির মতো একদম নিচে চওড়া ও ভাসমান করা */
+    /* ইউজার ও এআইয়ের টেক্সট সাইজ ও কালার */
+    .stChatMessage p {
+        color: #1f1f1f !important;
+        font-size: 16px !important;
+        line-height: 1.5;
+    }
+    
+    /* চ্যাট ইনপুট বক্সকে একদম জেমিনির মতো নিচে ভাসমান ও আকর্ষণীয় করা */
     .stChatInput {
         position: fixed !important;
-        bottom: 20px !important;
+        bottom: 25px !important;
         left: 50% !important;
         transform: translateX(-50%) !important;
         width: 85% !important;
-        max-width: 750px !important;
-        background: #f0f4f9 !important;
+        max-width: 800px !important;
+        background: #ffffff !important;
         border-radius: 30px !important;
-        padding: 5px 15px !important;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.08) !important;
+        padding: 8px 20px !important;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12) !important;
+        border: 1px solid #dcdfe5 !important;
         z-index: 99999 !important;
     }
     
-    /* লেখার পেজ যাতে ইনপুট বক্সের নিচে ঢাকা না পড়ে */
+    /* নিচে ইনপুট বক্সের জন্য পর্যাপ্ত গ্যাপ রাখা যাতে লেখা ঢাকা না পড়ে */
     .block-container {
-        padding-bottom: 120px !important;
-        max-width: 800px !important;
+        padding-top: 30px !important;
+        padding-bottom: 140px !important;
+        max-width: 850px !important;
+    }
+    
+    /* ভয়েস সিলেক্ট ড্রপডাউন ডিজাইন */
+    .stSelectbox div[data-baseweb="select"] {
+        background-color: white;
+        border-radius: 12px;
     }
     </style>
 """, unsafe_allow_html=True)
 
-# ওপরের হেডার ও ভয়েস সিলেক্টর
-st.markdown("<h2 style='text-align: center; color: #1f1f1f; font-family: sans-serif;'>✨ Gemini AI</h2>", unsafe_allow_html=True)
-
-col1, col2, col3 = st.columns([1, 2, 1])
+# ওপরের হেডার ও ভয়েস জেন্ডার টগল অপশন
+col1, col2 = st.columns([5, 1])
+with col1:
+    st.markdown("<h3 style='color: #1f1f1f; margin-bottom: 0;'>✨ Gemini AI</h3>", unsafe_allow_html=True)
 with col2:
-    voice_gender = st.selectbox("", ["Female", "Male"], label_visibility="collapsed")
+    voice_gender = st.selectbox("ভয়েস", ["Female", "Male"], label_visibility="collapsed")
 
-# চ্যাট হিস্ট্রি ডিসপ্লে
+st.markdown("<hr style='margin-top: 10px; margin-bottom: 20px; border: 0; border-top: 1px solid #e1e6ed;'>", unsafe_allow_html=True)
+
+# চ্যাট হিস্ট্রি স্ক্রিনে রেন্ডার করা
 for message in st.session_state.messages:
     if message["role"] != "system":
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
-# ইনপুট বক্স
+# ইনপুট ফিল্ড এবং প্রম্পট হ্যান্ডলিং
 if prompt := st.chat_input("Gemini-কে কিছু জিজ্ঞাসা করুন..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        with st.spinner("উত্তর তৈরি হচ্ছে..."):
+        with st.spinner("চিন্তা করছি..."):
             try:
                 res = client.chat.completions.create(
                     model="openai/gpt-oss-20b",
@@ -91,7 +111,7 @@ if prompt := st.chat_input("Gemini-কে কিছু জিজ্ঞাসা 
                 st.markdown(reply)
                 st.session_state.messages.append({"role": "assistant", "content": reply})
 
-                # ব্রাউজার ভয়েস আউটপুট (Male/Female কণ্ঠসহ)
+                # ব্রাউজারের ভয়েস আউটপুট স্ক্রিপ্ট (Male/Female কণ্ঠসহ)
                 selected_voice_filter = "female" if voice_gender == "Female" else "male"
                 js_code = f"""
                 <script>
@@ -113,4 +133,4 @@ if prompt := st.chat_input("Gemini-কে কিছু জিজ্ঞাসা 
                 st.markdown(js_code, unsafe_allow_html=True)
 
             except Exception as err:
-                st.error(f"Error: {err}")
+                st.error(f"ত্রুটি ঘটেছে: {err}")
