@@ -1,11 +1,9 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-# পেজ কনফিগারেশন
 st.set_page_config(page_title="Gemini AI Assistant", page_icon="✨", layout="wide")
 
-# শতভাগ নিখুঁত এবং ফিক্সড ফুল-স্ক্রিন HTML/JS অ্যাপ কোড
-html_app_code = """
+perfect_app_code = """
 <!DOCTYPE html>
 <html lang="bn">
 <head>
@@ -29,7 +27,7 @@ html_app_code = """
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 24px;
+            padding: 14px 24px;
             background: #ffffff;
             border-bottom: 1px solid #e1e6ed;
             width: 100%;
@@ -69,7 +67,7 @@ html_app_code = """
             flex: 1;
             overflow-y: auto;
             padding: 24px;
-            padding-bottom: 140px;
+            padding-bottom: 150px;
             display: flex;
             flex-direction: column;
             gap: 20px;
@@ -109,6 +107,7 @@ html_app_code = """
             border-top: 1px solid #f1f3f4;
             padding-top: 12px;
         }
+        /* জলজল বা পাল্সিং অ্যানিমেশনসহ প্রিমিয়াম ভয়েস বাটন */
         .speak-btn {
             background: #e8f0fe;
             border: 1px solid #d2e3fc;
@@ -123,10 +122,18 @@ html_app_code = """
             color: #1a73e8;
             transition: all 0.2s ease;
         }
-        .speak-btn:active {
-            transform: scale(0.95);
+        .speak-btn.active {
+            background: #fce8e6;
+            color: #c5221f;
+            border-color: #fadcbc;
+            animation: pulse 1.5s infinite;
         }
-        /* একদম নিচে চওড়া ভাসমান প্রিমিয়াম ইনপুট বক্স */
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(197, 34, 31, 0.4); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(197, 34, 31, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(197, 34, 31, 0); }
+        }
+        /* নিচে চওড়া ভাসমান কম্বো ইনপুট বার */
         .input-bar {
             position: fixed;
             bottom: 25px;
@@ -153,7 +160,26 @@ html_app_code = """
             background: transparent;
             color: #202124;
         }
-        .input-bar button {
+        .mic-btn {
+            background: #f1f3f4;
+            border: none;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #5f6368;
+            transition: 0.2s;
+        }
+        .mic-btn.listening {
+            background: #fce8e6;
+            color: #c5221f;
+            animation: pulse 1.5s infinite;
+        }
+        .send-btn {
             background: #1a73e8;
             border: none;
             color: white;
@@ -165,7 +191,7 @@ html_app_code = """
             align-items: center;
             justify-content: center;
             font-size: 20px;
-            flex-shrink: 0;
+            flex-shrink: cent;
             box-shadow: 0 4px 10px rgba(26,115,232,0.3);
         }
     </style>
@@ -186,16 +212,17 @@ html_app_code = """
 
     <div id="chat-container">
         <div class="message ai-message">
-            নমস্কার! 😊 আমি আপনার জেমিনি সহকারী। যারা পড়তে পারেন না, তারা নিচের ডানপাশের "🔊 ভয়েস শুনুন" বাটনে ক্লিক করলেই আমি পুরো লেখাটি মুখে পড়ে শোনাবো। বলুন, আপনাকে কীভাবে সাহায্য করতে পারি? ✨
+            নমস্কার! 😊 আমি আপনার জেমিনি সহকারী। যারা পড়তে পারেন না, তারা নিচের ডানপাশের "🔊 ভয়েস শুনুন" বাটনে ক্লিক করলেই জলজল করে অ্যানিমেশন সহ পুরো লেখাটি মুখে পড়ে শোনাবো। বলুন, আপনাকে কীভাবে সাহায্য করতে পারি? ✨
             <div class="toolbar">
-                <button class="speak-btn" onclick="playVoice(this, 'নমস্কার! 😊 আমি আপনার জেমিনি সহকারী। যারা পড়তে পারেন না, তারা নিচের ডানপাশের ভয়েস শুনুন বাটনে ক্লিক করলেই আমি পুরো লেখাটি মুখে পড়ে শোনাবো। বলুন, আপনাকে কীভাবে সাহায্য করতে পারি?')">🔊 ভয়েস শুনুন</button>
+                <button class="speak-btn" id="btn_welcome" onclick="playVoice(this, 'নমস্কার! আমি আপনার জেমিনি সহকারী। যারা পড়তে পারেন না, তারা নিচের ডানপাশের ভয়েস শুনুন বাটনে ক্লিক করলেই পুরো লেখাটি মুখে পড়ে শোনাবো। বলুন, আপনাকে কীভাবে সাহায্য করতে পারি?')">🔊 ভয়েস শুনুন</button>
             </div>
         </div>
     </div>
 
     <div class="input-bar">
+        <button class="mic-btn" id="micBtn" title="মুখে বলুন" onclick="startSpeechRecognition()">🎙️</button>
         <input type="text" id="userInput" placeholder="Gemini-কে কিছু জিজ্ঞাসা করুন..." onkeypress="handleKeyPress(event)">
-        <button onclick="sendMessage()">⬆</button>
+        <button class="send-btn" onclick="sendMessage()">⬆</button>
     </div>
 
     <script>
@@ -213,18 +240,17 @@ html_app_code = """
             const text = input.value.trim();
             if (!text) return;
 
-            // యూজার মেসেজ প্রদর্শন
             appendMessage(text, 'user');
             input.value = '';
 
-            // এআই উত্তরের সিমুলেশন বা রেসপন্স
             setTimeout(() => {
-                const aiResponse = "আপনার কথাটি আমি বুঝতে পেরেছি। এটি অত্যন্ত চমৎকার একটি বিষয় এবং আমি আপনাকে এতে পূর্ণ সহযোগিতা করব!";
+                const aiResponse = "আপনার কথাটি আমি অত্যন্ত মনোযোগ দিয়ে শুনেছি। এটি একটি দারুণ বিষয় এবং আমি আপনাকে এতে পুরোপুরি সাহায্য করতে প্রস্তুত আছি!";
                 const safeTextJson = JSON.stringify(aiResponse);
+                const uniqueId = 'btn_' + Date.now();
                 
                 const aiHTML = `${aiResponse}
                     <div class="toolbar">
-                        <button class="speak-btn" onclick="playVoice(this, ${safeTextJson})">🔊 ভয়েস শুনুন</button>
+                        <button class="speak-btn" id="${uniqueId}" onclick="playVoice(this, ${safeTextJson})">🔊 ভয়েস শুনুন</button>
                     </div>`;
                 
                 appendMessage(aiHTML, 'ai');
@@ -237,14 +263,59 @@ html_app_code = """
             }
         }
 
-        // ব্রাউজারের নেটিভ ভয়েস স্পিচ ইঞ্জিন
+        // ব্রাউজারের ভয়েস স্পিচ রিকগনিশন (মুখে বলে টাইপ করার জন্য)
+        function startSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                alert('আপনার ব্রাউজার ভয়েস টাইপিং সাপোর্ট করে না।');
+                return;
+            }
+
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'bn-IN';
+            const micBtn = document.getElementById('micBtn');
+
+            recognition.onstart = function() {
+                micBtn.classList.add('listening');
+                micBtn.innerHTML = '🔴';
+            };
+
+            recognition.onresult = function(event) {
+                const speechToText = event.results[0][0].transcript;
+                document.getElementById('userInput').value = speechToText;
+                micBtn.classList.remove('listening');
+                micBtn.innerHTML = '🎙️';
+                sendMessage();
+            };
+
+            recognition.onerror = function() {
+                micBtn.classList.remove('listening');
+                micBtn.innerHTML = '🎙️';
+            };
+
+            recognition.onend = function() {
+                micBtn.classList.remove('listening');
+                micBtn.innerHTML = '🎙️';
+            };
+
+            recognition.start();
+        }
+
+        // ১০০% পারফেক্ট সাউন্ড ও জলজল করা অ্যানিমেশনসহ ভয়েস প্লে সিস্টেম
         function playVoice(btn, text) {
             if (!('speechSynthesis' in window)) {
                 alert('আপনার ব্রাউজার ভয়েস সাপোর্ট করে না।');
                 return;
             }
 
+            // যদি অলরেডি কথা বলতে থাকে তবে বন্ধ করবে
             window.speechSynthesis.cancel();
+
+            // সব বাটনের একটিভ স্টাইল রিমুভ করা
+            document.querySelectorAll('.speak-btn').forEach(b => {
+                b.classList.remove('active');
+                b.innerHTML = '🔊 ভয়েস শুনুন';
+            });
 
             var msg = new SpeechSynthesisUtterance(text);
             msg.lang = 'bn-IN';
@@ -262,20 +333,17 @@ html_app_code = """
             }
 
             msg.onstart = function() {
-                btn.style.background = '#fce8e6';
-                btn.style.color = '#c5221f';
-                btn.innerHTML = '🔊 বলছি...';
+                btn.classList.add('active');
+                btn.innerHTML = '🔊 বলছি... (জলজল করছে)';
             };
 
             msg.onend = function() {
-                btn.style.background = '#e8f0fe';
-                btn.style.color = '#1a73e8';
+                btn.classList.remove('active');
                 btn.innerHTML = '🔊 ভয়েস শুনুন';
             };
 
             msg.onerror = function() {
-                btn.style.background = '#e8f0fe';
-                btn.style.color = '#1a73e8';
+                btn.classList.remove('active');
                 btn.innerHTML = '🔊 ভয়েস শুনুন';
             };
 
@@ -286,5 +354,4 @@ html_app_code = """
 </html>
 """
 
-# Streamlit কম্পোনেন্টে পুরো স্ক্রিন জুড়ে রেন্ডার করা
-components.html(html_app_code, height=900, scrolling=False)
+components.html(perfect_app_code, height=900, scrolling=False)
