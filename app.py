@@ -42,7 +42,6 @@ st.markdown("""
         line-height: 1.6;
     }
     
-    /* ইনপুট বক্স ফিক্সড এবং ভাসমান রাখার জন্য */
     .stChatInput {
         position: fixed !important;
         bottom: 20px !important;
@@ -76,6 +75,7 @@ st.markdown(f"""
     </a>
 """, unsafe_allow_html=True)
 
+# চ্যাট হিস্ট্রি রেন্ডার করা
 for i, message in enumerate(st.session_state.messages):
     if message["role"] != "system":
         with st.chat_message(message["role"]):
@@ -134,6 +134,7 @@ for i, message in enumerate(st.session_state.messages):
                 """
                 st.markdown(voice_html, unsafe_allow_html=True)
 
+# ইউজার ইনপুট এবং API কল
 if prompt := st.chat_input("Gemini-কে কিছু জিজ্ঞাসা করুন..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
@@ -143,14 +144,13 @@ if prompt := st.chat_input("Gemini-কে কিছু জিজ্ঞাসা 
         with st.spinner("উত্তর তৈরি হচ্ছে..."):
             try:
                 res = client.chat.completions.create(
-                    model="llama-3.3-70b-versatile",  # মডেলের নামটি আপনার আগের মতো ঠিক রাখা হয়েছে
+                    model="llama-3.3-70b-versatile",
                     messages=[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
                     temperature=0.7
                 )
                 reply = res.choices[0].message.content
                 st.markdown(reply)
                 st.session_state.messages.append({"role": "assistant", "content": reply})
-                st.rerun()
 
             except Exception as err:
                 st.error(f"ত্রুটি ঘটেছে: {err}")
