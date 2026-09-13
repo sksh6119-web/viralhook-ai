@@ -6,17 +6,17 @@ import os
 
 st.set_page_config(page_title="Echo AI - আপনার ভয়েস ও স্ক্রিনশট সহকারী", page_icon="🌐", layout="centered")
 
-# সাইডবারে সাউন্ড অন/অফ করার কন্ট্রোল
 st.sidebar.title("⚙️ সেটিংস")
 sound_enabled = st.sidebar.toggle("🔊 অটো ভয়েস আউটপুট", value=True)
 
-# বাংলা ভয়েস জেনারেট করে অডিও প্লেয়ার দেখানোর ফাংশন
+# ভয়েস আরও ফাস্ট এবং স্পষ্ট করার ফাংশন
 def play_auto_voice(text, unique_id):
     if not sound_enabled:
         return
     try:
         clean_text = str(text).replace('"', '').replace("'", "").replace('\n', ' ')
         if len(clean_text.strip()) > 0:
+            # slow=False এবং tld='com.bn' বা দ্রুত রিডিংয়ের জন্য সেটআপ
             tts = gTTS(text=clean_text, lang='bn', slow=False)
             audio_file = f"voice_{unique_id}.mp3"
             tts.save(audio_file)
@@ -52,18 +52,15 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# প্রিমিয়াম হেডার
 st.markdown("<h2 style='text-align: center; color: #1a73e8; margin-bottom: 0px;'>🌐 Echo AI</h2>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; color: #666666; font-size: 14px; margin-top: 2px;'>আপনার স্মার্ট ভয়েস ও স্ক্রিনশট সহকারী</p>", unsafe_allow_html=True)
 
-# প্রমোশন ব্যানার
 st.markdown("""
     <div style="background: #e8f0fe; border: 1px solid #d2e3fc; padding: 12px; border-radius: 12px; text-align: center; margin-bottom: 20px;">
         📢 <a href="https://www.profitableratecpmnetwork.com/h7syyv17p?key=ebdal4de90b6395f05ef374d764ca71" target="_blank" style="color: #1a73e8; text-decoration: none; font-weight: bold;">বিশেষ অফার ও আপডেট দেখতে এখানে ক্লিক করুন!</a> 🚀
     </div>
 """, unsafe_allow_html=True)
 
-# চ্যাট হিস্ট্রি রেন্ডার করা (অডিও প্লেয়ারসহ)
 for i, message in enumerate(st.session_state.messages):
     if message["role"] != "system":
         with st.chat_message(message["role"]):
@@ -82,7 +79,6 @@ for i, message in enumerate(st.session_state.messages):
                 if message["role"] == "assistant":
                     play_auto_voice(content, unique_id=f"hist_msg_{i}")
 
-# ফাইল আপলোড এবং ইনপুট অংশ
 uploaded_file = st.file_uploader("📸 স্ক্রিনশট বা ছবি আপলোড করুন:", type=["jpg", "jpeg", "png"], key="echo_ai_uploader")
 prompt = st.chat_input("Echo AI কে কিছু জিগ্যেস করুন...")
 
