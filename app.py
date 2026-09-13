@@ -89,7 +89,7 @@ for i, message in enumerate(st.session_state.messages):
                 safe_text = json.dumps(message["content"])
                 selected_gender = "female" if voice_gender == "Female" else "male"
                 
-                voice_html = f"""
+                voice_template = """
                 <div style="display: flex; justify-content: flex-start; margin-top: 12px; padding-top: 8px;">
                     <button id="voice_btn_{i}" onclick="runVoice_{i}()" style="background: #edf2f7; border: 1px solid #cbd5e0; border-radius: 20px; padding: 6px 16px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: #2b6cb0;">
                         🔊 ভয়েস শুনুন
@@ -166,12 +166,13 @@ for i, message in enumerate(st.session_state.messages):
                     }} else {{
                         window.speechSynthesis.onvoiceschanged = function() {{
                             speakNow();
-                        };
+                        }};
                         setTimeout(speakNow, 100);
                     }}
                 }}
                 </script>
                 """
+                voice_html = voice_template.format(i=i, safe_text=safe_text, selected_gender=selected_gender)
                 st.markdown(voice_html, unsafe_allow_html=True)
 
 if prompt := st.chat_input("ভাইরাল খবর, ধর্মগ্রন্থ, গল্প বা সাধারণ বুদ্ধি নিয়ে কিছু জিজ্ঞাসা করুন..."):
