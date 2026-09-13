@@ -12,8 +12,8 @@ except Exception as e:
 
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "system", "content": "You are a helpful and practical assistant. CRITICAL RULES: 1. Always reply in the EXACT same language that the user uses. 2. If the user uploads a photo or screenshot, DO NOT generate new images. Only read, analyze, and explain the text/content in the uploaded image simply in the user's language."},
-        {"role": "assistant", "content": "নমস্কার! 🙏 আমি আপনার সহকারী। আপনি যেকোনো স্ক্রিনশট বা ছবি আপলোড করুন—আমি সাথে সাথে সেটির লেখা পড়ে বাংলায় সহজ করে বুঝিয়ে দেব।"}
+        {"role": "system", "content": "You are a direct, honest, and practical assistant. Rules: 1. Always reply in clear, simple Bengali. 2. If you don't understand something or cannot process an image, clearly state 'আমি বুঝতে পারিনি' (I couldn't understand). 3. If an image or screenshot is uploaded, DO NOT generate new images. Only read and explain the text or contents of the image in plain Bengali."},
+        {"role": "assistant", "content": "নমস্কার! 🙏 আমি আপনার সহকারী। আপনি স্ক্রিনশট বা ছবি দিন, আমি সাথে সাথে সেটির অর্থ বাংলায় বুঝিয়ে দিচ্ছি।"}
     ]
 
 st.markdown("""
@@ -21,25 +21,14 @@ st.markdown("""
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
-    
-    .stApp {
-        background-color: #f8f9fa;
-        font-family: sans-serif;
-    }
-    
-    .stChatMessage {
-        border-radius: 15px !important;
-        padding: 15px !important;
-        margin-bottom: 12px !important;
-        background-color: #ffffff !important;
-        border: 1px solid #e0e0e0 !important;
-    }
+    .stApp { background-color: #f8f9fa; font-family: sans-serif; }
+    .stChatMessage { border-radius: 15px !important; padding: 15px !important; margin-bottom: 12px !important; background-color: #ffffff !important; border: 1px solid #e0e0e0 !important; }
     </style>
 """, unsafe_allow_html=True)
 
 st.markdown("<h3 style='text-align: center; color: #1a73e8;'>🎙️ স্ক্রিনশট রিডার ও ভয়েস হাব</h3>", unsafe_allow_html=True)
 
-# চ্যাট হিস্ট্রি ডিসপ্লে করা
+# চ্যাট হিস্ট্রি দেখানো
 for message in st.session_state.messages:
     if message["role"] != "system":
         with st.chat_message(message["role"]):
@@ -53,26 +42,51 @@ for message in st.session_state.messages:
             else:
                 st.markdown(content)
             
-            # অ্যাসিস্ট্যান্ট মেসেজের নিচে ভয়েস প্লে ও স্টপ করার জন্য Streamlit এর নিজস্ব বাটন
+            # ভয়েস প্লে ও স্টপ বাটন
             if message["role"] == "assistant":
-                text_to_speak = content if isinstance(content, str) else "তথ্য বিশ্লেষণ সম্পন্ন হয়েছে।"
-                # জাভাস্ক্রিপ্টের মাধ্যমে ভয়েস রিডার ট্রিগার করা
-                safe_js_text = text_to_speak.replace('"', '\\"').replace('\n', ' ')
+                text_to_speak = content if isinstance(content, str) else "বিশ্লেষণ সম্পন্ন হয়েছে।"
+                safe_js_text = text_to_speak.replace('"', '\\"').replace('\n', ' ').replace("'", "\\'")
                 
-                voice_code = f"""
-                <div style="margin-top: 10px; display: flex; gap: 8px;">
-                    <button onclick="window.speechSynthesis.cancel(); var u = new SpeechSynthesisUtterance('{safe_js_text}'); u.rate=0.9; window.speechSynthesis.speak(u);" style="background: #e8f0fe; color: #1a73e8; border: 1px solid #d2e3fc; padding: 6px 14px; border-radius: 15px; font-weight: bold; cursor: pointer; font-size: 13px;">
+                voice_html = f"""
+                <div style="margin-top: 10px; display: flex; gap: 8px; align-items: center;">
+                    <button onclick="
+                        if ('speechSynthesis' in window) {{
+                            window.speechSynthesis.cancel();
+                            var u = new SpeechSynthesisUtterance('{safe_js_text}');
+                            u.rate = 0.9;
+                            u.lang = 'bn-IN';
+                            window.speechSynthesis.speak(u);
+                        }}
+                    " style="background: #e8f0fe; color: #1a73e8; border: 1px solid #d2e3fc; padding: 6px 14px; border-radius: 15px; font-weight: bold; cursor: pointer; font-size: 13px;">
                         🔊 ভয়েস শুনুন
                     </button>
-                    <button onclick="window.speechSynthesis.cancel();" style="background: #fce8e6; color: #c5221f; border: 1px solid #fadcda; padding: 6px 12px; border-radius: 15px; font-weight: bold; cursor: pointer; font-size: 13px;">
+                    <button onclick="
+                        if ('speechSynthesis' in window) {{
+                            window.speechSynthesis.cancel();
+                        }}
+                    " style="background: #fce8e6; color: #c5221f; border: 1px solid #fadcda; padding: 6px 12px; border-radius: 15px; font-weight: bold; cursor: pointer; font-size: 13px;">
                         ⏹️ বন্ধ করুন
                     </button>
                 </div>
+                
+                <script>
+                (function() {{
+                    if ('speechSynthesis' in window) {{
+                        window.speechSynthesis.cancel();
+                        var u = new SpeechSynthesisUtterance('{safe_js_text}');
+                        u.rate = 0.9;
+                        u.lang = 'bn-IN';
+                        setTimeout(function() {{
+                            window.speechSynthesis.speak(u);
+                        }, 300);
+                    }}
+                }})();
+                </script>
                 """
-                st.markdown(voice_code, unsafe_allow_html=True)
+                st.markdown(voice_html, unsafe_allow_html=True)
 
-# ইউজার ইনপুট এবং ফাইল আপলোডার একসাথে হ্যান্ডেল করার ফর্ম
-uploaded_file = st.file_uploader("📷 স্ক্রিনশট বা ছবি দিন:", type=["jpg", "jpeg", "png"], key="img_upload")
+# ফাইল আপলোড এবং ইনপুট
+uploaded_file = st.file_uploader("📷 স্ক্রিনশট বা ছবি আপলোড করুন:", type=["jpg", "jpeg", "png"], key="clean_img_uploader")
 prompt = st.chat_input("কিছু লিখুন বা প্রশ্ন করুন...")
 
 if prompt or uploaded_file:
@@ -87,7 +101,7 @@ if prompt or uploaded_file:
     if prompt:
         user_content.append({"type": "text", "text": prompt})
     else:
-        user_content.append({"type": "text", "text": "এই ছবি বা স্ক্রিনশটটিতে কী আছে তা বাংলায় সহজ করে বুঝিয়ে দিন যাতে সবাই বুঝতে পারে।"})
+        user_content.append({"type": "text", "text": "এই স্ক্রিনশট বা ছবিটিতে কী লেখা আছে বা কী বোঝানো হয়েছে, তা বাংলায় খুব স্পষ্ট করে বুঝিয়ে দিন। যদি বুঝতে না পারেন তবে বলুন যে বুঝতে পারেননি।"})
 
     st.session_state.messages.append({"role": "user", "content": user_content})
     
@@ -98,30 +112,26 @@ if prompt or uploaded_file:
             st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        with st.spinner("উত্তর তৈরি হচ্ছে..."):
+        with st.spinner("বিশ্লেষণ করা হচ্ছে..."):
             try:
                 model_to_use = "meta-llama/llama-3.2-11b-vision-preview" if uploaded_file is not None else "openai/gpt-oss-20b"
                 
                 res = client.chat.completions.create(
                     model=model_to_use,
                     messages=[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
-                    temperature=0.7,
+                    temperature=0.5,
                     max_tokens=1024
                 )
                 reply = res.choices[0].message.content
+                
+                if not reply or reply.strip().lower() in ["sure.", "sure", "ok", "okay"]:
+                    reply = "আমি দুঃখিত, ছবিটির লেখা বা বিষয়বস্তু স্পষ্টভাবে পড়তে পারছি না। দয়া করে পরিষ্কার স্ক্রিনশট দিন।"
+                
                 st.markdown(reply)
                 st.session_state.messages.append({"role": "assistant", "content": reply})
                 st.rerun()
             except Exception as err:
-                try:
-                    res_fallback = client.chat.completions.create(
-                        model="openai/gpt-oss-20b",
-                        messages=[{"role": m["role"], "content": "Please reply simply." if isinstance(m["content"], list) else m["content"]} for m in st.session_state.messages],
-                        temperature=0.7
-                    )
-                    reply = res_fallback.choices[0].message.content
-                    st.markdown(reply)
-                    st.session_state.messages.append({"role": "assistant", "content": reply})
-                    st.rerun()
-                except Exception as e2:
-                    st.error(f"ত্রুটি: {e2}")
+                reply = f"আমি বুঝতে পারিনি বা প্রযুক্তিগত সমস্যার কারণে প্রক্রিয়াটি সম্পন্ন হয়নি।"
+                st.markdown(reply)
+                st.session_state.messages.append({"role": "assistant", "content": reply})
+                st.rerun()
