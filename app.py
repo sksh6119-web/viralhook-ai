@@ -36,7 +36,7 @@ st.markdown("""
 st.markdown("<h2 style='text-align: center; color: #1a73e8; margin-bottom: 0px;'>🌐 Echo AI</h2>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; color: #666666; font-size: 14px; margin-top: 2px;'>আপনার স্মার্ট ভয়েস ও স্ক্রিনশট সহকারী</p>", unsafe_allow_html=True)
 
-# বিজ্ঞাপন ব্যানার
+# আপনার প্রমোশন ও বিজ্ঞাপনের ব্যানার লিংক
 st.markdown("""
     <div style="background: #e8f0fe; border: 1px solid #d2e3fc; padding: 12px; border-radius: 12px; text-align: center; margin-bottom: 15px;">
         📢 <a href="https://www.profitableratecpmnetwork.com/h7ssyv17p?key=eb8a14de90b0395f65ebf374d7d4ca71" target="_blank" style="color: #1a73e8; font-weight: bold; text-decoration: none; font-size: 15px;">বিশেষ অফার ও আপডেট দেখতে এখানে ক্লিক করুন! 🚀</a>
@@ -44,7 +44,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # চ্যাট হিস্ট্রি রেন্ডার করা
-for i, message in enumerate(st.session_state.messages):
+for message in st.session_state.messages:
     if message["role"] != "system":
         with st.chat_message(message["role"]):
             content = message["content"]
@@ -56,36 +56,6 @@ for i, message in enumerate(st.session_state.messages):
                         st.image(part.get("image_url").get("url"), caption="আপলোড করা স্ক্রিনশট", width=280)
             else:
                 st.markdown(content)
-            
-            # অ্যাসিস্ট্যান্টের মেসেজের পাশে আলাদা এবং নিখুঁত ভয়েস প্লে ও স্টপ বাটন
-            if message["role"] == "assistant":
-                text_to_speak = content if isinstance(content, str) else "বিশ্লেষণ সম্পন্ন হয়েছে।"
-                clean_text = text_to_speak.replace('"', '').replace("'", "").replace('\n', ' ')
-                
-                # Streamlit এর কলাম ব্যবহার করে বাটনগুলো একদম পরিপাটি ও আলাদা রাখা হয়েছে যাতে কোনো ওভারল্যাপ না হয়
-                col1, col2, col3 = st.columns([1, 1, 3])
-                with col1:
-                    if st.button("▶️ প্লে", key=f"play_{i}"):
-                        st.markdown(f"""
-                            <script>
-                            if ('speechSynthesis' in window) {{
-                                window.speechSynthesis.cancel();
-                                var u = new SpeechSynthesisUtterance('{clean_text}');
-                                u.rate = 0.9;
-                                u.lang = 'bn-IN';
-                                window.speechSynthesis.speak(u);
-                            }}
-                            </script>
-                        """, unsafe_allow_html=True)
-                with col2:
-                    if st.button("⏹️ স্টপ", key=f"stop_{i}"):
-                        st.markdown("""
-                            <script>
-                            if ('speechSynthesis' in window) {
-                                window.speechSynthesis.cancel();
-                            }
-                            </script>
-                        """, unsafe_allow_html=True)
 
 # ফাইল আপলোড এবং ইনপুট অংশ
 uploaded_file = st.file_uploader("📷 স্ক্রিনশট বা ছবি আপলোড করুন:", type=["jpg", "jpeg", "png"], key="echo_ai_uploader")
