@@ -89,7 +89,6 @@ for i, message in enumerate(st.session_state.messages):
                 safe_text = json.dumps(message["content"])
                 selected_gender = "female" if voice_gender == "Female" else "male"
                 
-                # উন্নত এবং শক্তিশালী ভয়েস স্ক্রিপ্ট যা মোবাইলের ব্রাউজারে নিশ্চিতভাবে কাজ করবে
                 voice_html = f"""
                 <div style="display: flex; justify-content: flex-start; margin-top: 12px; padding-top: 8px;">
                     <button id="voice_btn_{i}" onclick="runVoice_{i}()" style="background: #edf2f7; border: 1px solid #cbd5e0; border-radius: 20px; padding: 6px 16px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: #2b6cb0;">
@@ -115,7 +114,6 @@ for i, message in enumerate(st.session_state.messages):
                         var voices = window.speechSynthesis.getVoices();
                         var selectedVoice = null;
                         
-                        // সঠিক বাংলা বা জেন্ডার ভয়েস খোঁজা
                         for(var k = 0; k < voices.length; k++) {{
                             var vName = voices[k].name.toLowerCase();
                             var vLang = voices[k].lang.toLowerCase();
@@ -162,7 +160,6 @@ for i, message in enumerate(st.session_state.messages):
                         window.speechSynthesis.speak(utterance);
                     }}
                     
-                    // ব্রাউজারের ভয়েস লিস্ট লোড হওয়ার জন্য ছোট বিরতি হ্যান্ডেল করা
                     var voices = window.speechSynthesis.getVoices();
                     if (voices.length > 0) {{
                         speakNow();
@@ -170,7 +167,6 @@ for i, message in enumerate(st.session_state.messages):
                         window.speechSynthesis.onvoiceschanged = function() {{
                             speakNow();
                         };
-                        // ইমিডিয়েট ফলব্যাক যদি ইভেন্ট ফায়ার না করে
                         setTimeout(speakNow, 100);
                     }}
                 }}
