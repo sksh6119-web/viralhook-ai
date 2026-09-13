@@ -1,24 +1,26 @@
 import streamlit as st
 from groq import Groq
 import base64
+from gtts import gTTS
+import os
 
 st.set_page_config(page_title="Echo AI - আপনার ভয়েস ও স্ক্রিনশট সহকারী", page_icon="🌐", layout="centered")
 
-# সাউন্ড বাটন ফাংশন (সহজ ও নিরাপদ পদ্ধতি)
+# স্ট্যান্ডার্ড ও পরিষ্কার বাংলা ভয়েস তৈরির ফাংশন (gTTS ব্যবহার করে)
 def add_sound_feature(text, unique_id):
-    safe_text = str(text).replace('"', '').replace("'", "").replace('\n', ' ')
-    html_code = f"""
-    <div>
-        <button onclick="
-            var msg = new SpeechSynthesisUtterance('{safe_text}');
-            msg.lang = 'bn-BD';
-            window.speechSynthesis.speak(msg);
-        " style="background: #f0f2f6; border: 1px solid #ccc; padding: 5px 10px; border-radius: 5px; cursor: pointer;">
-            🔊 শুনুন
-        </button>
-    </div>
-    """
-    st.components.v1.html(html_code, height=40)
+    try:
+        # পরিষ্কার টেক্সট তৈরি
+        clean_text = str(text).replace('"', '').replace("'", "").replace('\n', ' ')
+        
+        # gTTS দিয়ে বাংলা অডিও ফাইল তৈরি করা
+        tts = gTTS(text=clean_text, lang='bn', slow=False)
+        audio_file = f"temp_audio_{unique_id}.mp3"
+        tts.save(audio_file)
+        
+        # Streamlit-এর নিজস্ব ইনবিল্ট অডিও প্লেয়ার (যা দেখতে সুন্দর ও সাবলীল)
+        st.audio(audio_file, format="audio/mp3")
+    except Exception as e:
+        st.write("🔊 (ভয়েস লোড করতে সমস্যা হয়েছে)")
 
 try:
     client = Groq(api_key=st.secrets["GROQ_API_KEY"])
