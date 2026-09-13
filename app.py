@@ -2,7 +2,7 @@ import streamlit as st
 from groq import Groq
 import json
 
-st.set_page_config(page_title="জ্ঞান, ভাইরাল নিউজ ও ভয়েস হাব", page_icon="✨", layout="wide")
+st.set_page_config(page_title="Global AI & Voice Hub", page_icon="🌍", layout="centered")
 
 try:
     client = Groq(api_key=st.secrets["GROQ_API_KEY"])
@@ -12,8 +12,8 @@ except Exception as e:
 
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "system", "content": "You are a highly intelligent, wise, and practical assistant. You have deep knowledge of holy scriptures like the Quran, Bhagavad Gita, and philosophical texts, storytelling, poetry, and song writing. Additionally, you are an expert in current viral news trends, social media strategies (Facebook, YouTube, Instagram), and practical common sense. Always provide accurate, peaceful, respectful, logical, and fluent responses in the user's language (Bengali). Keep the tone helpful, moral, and highly engaging."},
-        {"role": "assistant", "content": "নমস্কার ও আসসালামু আলাইকুম! 🙏 আমি আপনার জ্ঞান, ভাইরাল নিউজ ও সাধারণ বুদ্ধিমত্তার সহকারী। পবিত্র ধর্মগ্রন্থ, নৈতিক গল্প, গান-কবিতা লেখার পাশাপাশি ফেসবুক ও ইউটিউবের বর্তমান ভাইরাল খবর এবং যেকোনো বিষয়ে বাস্তবসম্মত সাধারণ বুদ্ধি বা সঠিক পরামর্শ দিতে আমি প্রস্তুত। বলুন, আজ আপনাকে কীভাবে সাহায্য করতে পারি?"}
+        {"role": "system", "content": "You are a highly intelligent, multilingual, and wise assistant. You know about religion (Quran, Gita), stories, songs, and viral trends. Always reply in the exact same language that the user uses to ask the question (e.g., if asked in English, reply in English; if in Bengali, reply in Bengali; if in Hindi, reply in Hindi). Keep the response clear, accurate, and helpful."},
+        {"role": "assistant", "content": "নমস্কার / Hello! 🙏 আমি আপনার সার্বজনীন সহকারী। আপনি যেকোনো ভাষায় (বাংলা, ইংরেজি, হিন্দি ইত্যাদি) আমার সাথে কথা বলতে পারেন বা প্রশ্ন করতে পারেন। আমি ঠিক সেই ভাষাতেই আপনাকে উত্তর দেব এবং ভয়েস বাটনে ক্লিক করলে সেটি উচ্চারণ করে শোনাব। বলুন, আজ কীভাবে সাহায্য করতে পারি?"}
     ]
 
 st.markdown("""
@@ -23,62 +23,21 @@ st.markdown("""
     header {visibility: hidden;}
     
     .stApp {
-        background-color: #fcfcfc;
-        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        background-color: #f8f9fa;
+        font-family: sans-serif;
     }
     
     .stChatMessage {
+        border-radius: 15px !important;
+        padding: 15px !important;
+        margin-bottom: 12px !important;
         background-color: #ffffff !important;
-        border-radius: 20px !important;
-        padding: 18px 22px !important;
-        margin-bottom: 18px !important;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-        border: 1px solid #eaeaea !important;
-    }
-    
-    .stChatMessage p {
-        color: #2c3e50 !important;
-        font-size: 16px !important;
-        line-height: 1.7;
-    }
-    
-    .stChatInput {
-        position: fixed !important;
-        bottom: 25px !important;
-        left: 50% !important;
-        transform: translateX(-50%) !important;
-        width: 85% !important;
-        max-width: 800px !important;
-        background: #ffffff !important;
-        border-radius: 32px !important;
-        padding: 6px 16px !important;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.08) !important;
-        border: 1px solid #dcdcdc !important;
-        z-index: 99999 !important;
-    }
-    
-    .block-container {
-        padding-top: 20px !important;
-        padding-bottom: 140px !important;
-        max-width: 850px !important;
+        border: 1px solid #e0e0e0 !important;
     }
     </style>
 """, unsafe_allow_html=True)
 
-col1, col2 = st.columns([5, 1])
-with col1:
-    st.markdown("<h3 style='color: #1a202c; margin-bottom: 0; font-weight: 600;'>✨ জ্ঞান, ভাইরাল নিউজ ও ভয়েস হাব</h3>", unsafe_allow_html=True)
-with col2:
-    voice_gender = st.selectbox("ভয়েস", ["Female", "Male"], label_visibility="collapsed")
-
-ad_url = "https://www.profitableratecpmnetwork.com/txpfccym?key=16ed7712c3ae7b7b8d90efb5c53300b3"
-st.markdown(f"""
-    <a href="{ad_url}" target="_blank" style="text-decoration: none;">
-        <div style="background: linear-gradient(135deg, #2b6cb0, #2f855a); color: white; padding: 10px 16px; border-radius: 12px; text-align: center; font-size: 14px; font-weight: 500; margin: 10px 0 15px 0; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
-            ✨ বিশেষ আপডেট ও অফার দেখতে এখানে ক্লিক করুন! (Sponsored)
-        </div>
-    </a>
-""", unsafe_allow_html=True)
+st.markdown("<h3 style='text-align: center; color: #1a73e8;'>🌍 গ্লোবাল এআই ও ভয়েস হাব</h3>", unsafe_allow_html=True)
 
 for i, message in enumerate(st.session_state.messages):
     if message["role"] != "system":
@@ -87,112 +46,76 @@ for i, message in enumerate(st.session_state.messages):
             
             if message["role"] == "assistant":
                 safe_text = json.dumps(message["content"])
-                selected_gender = "female" if voice_gender == "Female" else "male"
                 
-                voice_template = """
-                <div style="display: flex; justify-content: flex-start; margin-top: 12px; padding-top: 8px;">
-                    <button id="voice_btn_{i}" onclick="runVoice_{i}()" style="background: #edf2f7; border: 1px solid #cbd5e0; border-radius: 20px; padding: 6px 16px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: #2b6cb0;">
-                        🔊 ভয়েস শুনুন
+                # ইউনিভার্সাল ভয়েস স্ক্রিপ্ট যা লেখার ভাষা অনুযায়ী স্বয়ংক্রিয়ভাবে মানিয়ে নেবে
+                voice_html = f"""
+                <div style="margin-top: 10px;">
+                    <button id="v_btn_{i}" onclick="playVoice_{i}()" style="background: #e8f0fe; color: #1a73e8; border: 1px solid #d2e3fc; padding: 8px 16px; border-radius: 20px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
+                        🔊 Listen Voice / ভয়েস শুনুন
                     </button>
                 </div>
                 
                 <script>
-                function runVoice_{i}() {{
+                function playVoice_{i}() {{
                     if (!('speechSynthesis' in window)) {{
-                        alert('আপনার ব্রাউজার ভয়েস সাপোর্ট করে না।');
+                        alert('Your browser does not support voice speech.');
                         return;
                     }}
                     
                     window.speechSynthesis.cancel();
                     
-                    var textToRead = {safe_text};
-                    var utterance = new SpeechSynthesisUtterance(textToRead);
-                    utterance.lang = 'bn-IN';
+                    var text = {safe_text};
+                    var utterance = new SpeechSynthesisUtterance(text);
                     utterance.rate = 0.90;
                     
-                    function speakNow() {{
-                        var voices = window.speechSynthesis.getVoices();
-                        var selectedVoice = null;
-                        
-                        for(var k = 0; k < voices.length; k++) {{
-                            var vName = voices[k].name.toLowerCase();
-                            var vLang = voices[k].lang.toLowerCase();
-                            if (vLang.includes('bn') || vLang.includes('bangla')) {{
-                                if (vName.includes('{selected_gender}')) {{
-                                    selectedVoice = voices[k];
-                                    break;
-                                }} else if (!selectedVoice) {{
-                                    selectedVoice = voices[k];
-                                }}
-                            }}
-                        }}
-                        
-                        if (selectedVoice) {{
-                            utterance.voice = selectedVoice;
-                        }}
-                        
-                        var btnElem = document.getElementById('voice_btn_{i}');
-                        
-                        utterance.onstart = function() {{
-                            if(btnElem) {{
-                                btnElem.style.background = '#fed7d7';
-                                btnElem.style.color = '#c53030';
-                                btnElem.innerHTML = '🔊 বলছি...';
-                            }}
-                        }};
-                        
-                        utterance.onend = function() {{
-                            if(btnElem) {{
-                                btnElem.style.background = '#edf2f7';
-                                btnElem.style.color = '#2b6cb0';
-                                btnElem.innerHTML = '🔊 ভয়েস শুনুন';
-                            }}
-                        }};
-                        
-                        utterance.onerror = function() {{
-                            if(btnElem) {{
-                                btnElem.style.background = '#edf2f7';
-                                btnElem.style.color = '#2b6cb0';
-                                btnElem.innerHTML = '🔊 ভয়েস শুনুন';
-                            }}
-                        }};
-                        
-                        window.speechSynthesis.speak(utterance);
-                    }}
+                    var btn = document.getElementById('v_btn_{i}');
                     
-                    var voices = window.speechSynthesis.getVoices();
-                    if (voices.length > 0) {{
-                        speakNow();
-                    }} else {{
-                        window.speechSynthesis.onvoiceschanged = function() {{
-                            speakNow();
-                        }};
-                        setTimeout(speakNow, 100);
-                    }}
+                    utterance.onstart = function() {{
+                        if(btn) {{ 
+                            btn.innerText = "🔊 Speaking..."; 
+                            btn.style.background = "#fce8e6"; 
+                            btn.style.color = "#c5221f"; 
+                        }}
+                    }};
+                    
+                    utterance.onend = function() {{
+                        if(btn) {{ 
+                            btn.innerText = "🔊 Listen Voice / ভয়েস শুনুন"; 
+                            btn.style.background = "#e8f0fe"; 
+                            btn.style.color = "#1a73e8"; 
+                        }}
+                    }};
+                    
+                    utterance.onerror = function() {{
+                        if(btn) {{ 
+                            btn.innerText = "🔊 Listen Voice / ভয়েস শুনুন"; 
+                            btn.style.background = "#e8f0fe"; 
+                            btn.style.color = "#1a73e8"; 
+                        }}
+                    }};
+                    
+                    window.speechSynthesis.speak(utterance);
                 }}
                 </script>
                 """
-                voice_html = voice_template.format(i=i, safe_text=safe_text, selected_gender=selected_gender)
                 st.markdown(voice_html, unsafe_allow_html=True)
 
-if prompt := st.chat_input("ভাইরাল খবর, ধর্মগ্রন্থ, গল্প বা সাধারণ বুদ্ধি নিয়ে কিছু জিজ্ঞাসা করুন..."):
+if prompt := st.chat_input("Ask anything in any language... / যেকোনো ভাষায় কিছু লিখুন..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        with st.spinner("তথ্য ও বাস্তবসম্মত বুদ্ধি বিশ্লেষণ করা হচ্ছে..."):
+        with st.spinner("Generating response... / উত্তর তৈরি হচ্ছে..."):
             try:
                 res = client.chat.completions.create(
                     model="openai/gpt-oss-20b",
                     messages=[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
-                    temperature=0.7,
-                    tool_choice="none"
+                    temperature=0.7
                 )
                 reply = res.choices[0].message.content
                 st.markdown(reply)
                 st.session_state.messages.append({"role": "assistant", "content": reply})
                 st.rerun()
-
             except Exception as err:
-                st.error(f"ত্রুটি ঘটেছে: {err}")
+                st.error(f"Error: {err}")
