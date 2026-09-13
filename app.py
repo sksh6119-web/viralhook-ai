@@ -9,18 +9,16 @@ st.set_page_config(page_title="Echo AI - আপনার ভয়েস ও স
 st.sidebar.title("⚙️ সেটিংস")
 sound_enabled = st.sidebar.toggle("🔊 অটো ভয়েস আউটপুট", value=True)
 
-# ভয়েস আরও দ্রুত এবং স্পষ্ট করার ফাংশন
 def play_auto_voice(text, unique_id):
     if not sound_enabled:
         return
     try:
-        clean_text = str(text).replace('"', '').replace("'", "").replace('\n', ' ')
+        clean_text = str(text).replace('"', '').replace("'", "").replace('\n', ' ').replace('*', '').replace('#', '')
         if len(clean_text.strip()) > 0:
-            # বাংলা ভাষার জন্য গতি বাড়িয়ে ফাস্ট করার ব্যবস্থা
             tts = gTTS(text=clean_text, lang='bn', slow=False)
             audio_file = f"voice_{unique_id}.mp3"
             tts.save(audio_file)
-            # ব্রাউজারে দ্রুত প্লে করার জন্য গতি কন্ট্রোল ট্যাগসহ অডিও এমবেড করা
+            
             audio_html = f"""
                 <audio controls autoplay style="width: 100%;">
                     <source src="data:audio/mp3;base64,{base64.b64encode(open(audio_file, "rb").read()).decode()}" type="audio/mp3">
@@ -38,8 +36,8 @@ except Exception as e:
 
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "system", "content": "You are Echo AI, a helpful, wise, and intelligent assistant. CRITICAL RULES: 1. Always reply in Bengali language. 2. When the user provides an image or screenshot, thoroughly analyze it, read any text present in it, and explain its contents clearly in Bengali."},
-        {"role": "assistant", "content": "নমস্কার! 🙏 আমি Echo AI। আপনার স্ক্রিনশট বা ছবি দিন, আমি সেটি পড়ে বাংলায় বুঝিয়ে দেব।"}
+        {"role": "system", "content": "You are Echo AI, a helpful, wise, and intelligent assistant. CRITICAL RULES: 1. Always reply in Bengali language. 2. When the user provides an image or screenshot, thoroughly analyze it, read any text present in it, and explain its contents clearly and fluently in Bengali like a professional voice assistant."},
+        {"role": "assistant", "content": "নমস্কার! আমি Echo AI। আপনার স্ক্রিনশট বা ছবি দিন, আমি সেটি সঙ্গে সঙ্গে পড়ে বাংলায় বুঝিয়ে দেব।"}
     ]
 
 st.markdown("""
@@ -61,6 +59,7 @@ st.markdown("""
 st.markdown("<h2 style='text-align: center; color: #1a73e8; margin-bottom: 0px;'>🌐 Echo AI</h2>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; color: #666666; font-size: 14px; margin-top: 2px;'>আপনার স্মার্ট ভয়েস ও স্ক্রিনশট সহকারী</p>", unsafe_allow_html=True)
 
+# আপডেট করা নতুন এড লিংকসহ প্রমোশন ব্যানার
 st.markdown("""
     <div style="background: #e8f0fe; border: 1px solid #d2e3fc; padding: 12px; border-radius: 12px; text-align: center; margin-bottom: 20px;">
         📢 <a href="https://www.profitableratecpmnetwork.com/h7syyv17p?key=ebdal4de90b6395f05ef374d764ca71" target="_blank" style="color: #1a73e8; text-decoration: none; font-weight: bold;">বিশেষ অফার ও আপডেট দেখতে এখানে ক্লিক করুন!</a> 🚀
@@ -100,7 +99,7 @@ if prompt or uploaded_file:
     if prompt:
         user_content.append({"type": "text", "text": prompt})
     else:
-        user_content.append({"type": "text", "text": "এই স্ক্রিনশট বা ছবিটির কী লেখা আছে বা কী বোঝানো হয়েছে, তা বাংলায় খুব স্পষ্ট ও বিস্তারিতভাবে বুঝিয়ে বলুন।"})
+        user_content.append({"type": "text", "text": "এই স্ক্রিনশট বা ছবিটিতে কী লেখা আছে এবং কী বোঝানো হয়েছে, তা বিস্তারিতভাবে বাংলায় পড়ে শুনিয়ে দিন।"})
 
     st.session_state.messages.append({"role": "user", "content": user_content})
 
@@ -111,7 +110,7 @@ if prompt or uploaded_file:
             st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        with st.spinner("Echo AI চিন্তা করছে..."):
+        with st.spinner("Echo AI স্ক্রিনশট বিশ্লেষণ করছে..."):
             try:
                 model_to_use = "meta-llama/llama-3.2-11b-vision-preview" if uploaded_file is not None else "openai/gpt-oss-120b"
                 
@@ -125,7 +124,7 @@ if prompt or uploaded_file:
                 reply = res.choices[0].message.content
                 
                 if not reply or reply.strip().lower() in ["sure.", "sure", "ok", "okay"]:
-                    reply = "আমি দুঃখিত, অতিরিক্ত লেখা পড়তে পারিনি বা বুঝতে পারিনি।"
+                    reply = "আমি দুঃখিত, স্ক্রিনশটটি পরিষ্কারভাবে পড়তে পারিনি।"
                 
                 st.markdown(reply)
                 play_auto_voice(reply, unique_id=f"live_reply_{len(st.session_state.messages)}")
@@ -133,7 +132,7 @@ if prompt or uploaded_file:
                 st.session_state.messages.append({"role": "assistant", "content": reply})
                 st.rerun()
             except Exception as e:
-                reply = "আমি বুঝতে পারিনি বা প্রযুক্তিগত সমস্যা হয়েছে।"
+                reply = "স্ক্রিনশট প্রসেস করতে সমস্যা হয়েছে।"
                 st.markdown(reply)
                 play_auto_voice(reply, unique_id="error")
                 st.session_state.messages.append({"role": "assistant", "content": reply})
