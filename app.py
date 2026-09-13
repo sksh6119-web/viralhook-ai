@@ -59,10 +59,10 @@ st.markdown("""
 st.markdown("<h2 style='text-align: center; color: #1a73e8; margin-bottom: 0px;'>🌐 Echo AI</h2>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; color: #666666; font-size: 14px; margin-top: 2px;'>আপনার স্মার্ট ভয়েস ও স্ক্রিনশট সহকারী</p>", unsafe_allow_html=True)
 
-# আপডেট করা নতুন এড লিংকসহ প্রমোশন ব্যানার
+# আপনার দেওয়া একদম সঠিক ও ফাইনাল অ্যাড লিংক এখানে বসানো হলো
 st.markdown("""
     <div style="background: #e8f0fe; border: 1px solid #d2e3fc; padding: 12px; border-radius: 12px; text-align: center; margin-bottom: 20px;">
-        📢 <a href="https://www.profitableratecpmnetwork.com/h7syyv17p?key=ebdal4de90b6395f05ef374d764ca71" target="_blank" style="color: #1a73e8; text-decoration: none; font-weight: bold;">বিশেষ অফার ও আপডেট দেখতে এখানে ক্লিক করুন!</a> 🚀
+        📢 <a href="https://www.profitableratecpmnetwork.com/h7syyv17p?key=eb8a14de90b0395f65ebf374d7d4ca71" target="_blank" style="color: #1a73e8; text-decoration: none; font-weight: bold;">বিশেষ অফার ও আপডেট দেখতে এখানে ক্লিক করুন!</a> 🚀
     </div>
 """, unsafe_allow_html=True)
 
