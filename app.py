@@ -6,21 +6,21 @@ import os
 
 st.set_page_config(page_title="Echo AI - আপনার ভয়েস ও স্ক্রিনশট সহকারী", page_icon="🌐", layout="centered")
 
-# সাউন্ড অন/অফ করার গ্লোবাল কন্ট্রোল (Sidebar-এ সুইচ)
+# সাইডবারে সাউন্ড অন/অফ করার কন্ট্রোল
 st.sidebar.title("⚙️ সেটিংস")
-sound_enabled = st.sidebar.toggle("🔊 ভয়েস আউটপুট (Sound)", value=True)
+sound_enabled = st.sidebar.toggle("🔊 অটো ভয়েস আউটপুট", value=True)
 
-# অটোমেটিক ক্লিয়ার এবং স্ট্যান্ডার্ড বাংলা ভয়েস জেনারেট করার ফাংশন
+# বাংলা ভয়েস জেনারেট করে অডিও প্লেয়ার দেখানোর ফাংশন
 def play_auto_voice(text, unique_id):
     if not sound_enabled:
         return
     try:
         clean_text = str(text).replace('"', '').replace("'", "").replace('\n', ' ')
-        if len(clean_text.strip() > 0):
+        if len(clean_text.strip()) > 0:
             tts = gTTS(text=clean_text, lang='bn', slow=False)
             audio_file = f"voice_{unique_id}.mp3"
             tts.save(audio_file)
-            st.audio(audio_file, format="audio/mp3", autoplay=True)
+            st.audio(audio_file, format="audio/mp3")
     except Exception as e:
         pass
 
@@ -63,7 +63,7 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-# চ্যাট হিস্ট্রি রেন্ডার করা
+# চ্যাট হিস্ট্রি রেন্ডার করা (অডিও প্লেয়ারসহ)
 for i, message in enumerate(st.session_state.messages):
     if message["role"] != "system":
         with st.chat_message(message["role"]):
@@ -73,10 +73,14 @@ for i, message in enumerate(st.session_state.messages):
                     if part.get("type") == "text":
                         text_val = part.get("text")
                         st.markdown(text_val)
+                        if message["role"] == "assistant":
+                            play_auto_voice(text_val, unique_id=f"hist_txt_{i}")
                     elif part.get("type") == "image_url":
                         st.image(part.get("image_url").get("url"), caption="আপলোড করা স্ক্রিনশট", width=200)
             else:
                 st.markdown(content)
+                if message["role"] == "assistant":
+                    play_auto_voice(content, unique_id=f"hist_msg_{i}")
 
 # ফাইল আপলোড এবং ইনপুট অংশ
 uploaded_file = st.file_uploader("📸 স্ক্রিনশট বা ছবি আপলোড করুন:", type=["jpg", "jpeg", "png"], key="echo_ai_uploader")
@@ -122,9 +126,7 @@ if prompt or uploaded_file:
                     reply = "আমি দুঃখিত, অতিরিক্ত লেখা পড়তে পারিনি বা বুঝতে পারিনি।"
                 
                 st.markdown(reply)
-                
-                # অটোমেটিক ভয়েস প্লে এবং সাউন্ড অন/অফ কন্ট্রোল
-                play_auto_voice(reply, unique_id=len(st.session_state.messages))
+                play_auto_voice(reply, unique_id=f"live_reply_{len(st.session_state.messages)}")
                 
                 st.session_state.messages.append({"role": "assistant", "content": reply})
                 st.rerun()
