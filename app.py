@@ -2,7 +2,7 @@ import streamlit as st
 from groq import Groq
 import base64
 
-st.set_page_config(page_title="স্ক্রিনশট রিডার ও ভয়েস হাব", page_icon="🎙️", layout="centered")
+st.set_page_config(page_title="Echo AI - ভয়েস ও স্ক্রিনশট সহকারী", page_icon="🌐", layout="centered")
 
 try:
     client = Groq(api_key=st.secrets["GROQ_API_KEY"])
@@ -12,15 +12,15 @@ except Exception as e:
 
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "system", "content": "You are a helpful assistant. Always reply in clear Bengali. If an image or screenshot is uploaded, DO NOT generate new images. Only read, analyze, and explain the contents simply in Bengali. If you cannot understand, say 'আমি বুঝতে পারিনি'."},
-        {"role": "assistant", "content": "নমস্কার! 🙏 আমি আপনার সহকারী। স্ক্রিনশট বা ছবি দিন, আমি সেটি পড়ে বাংলায় বুঝিয়ে দেব এবং সাথে সাথে ভয়েস বেজে উঠবে।"}
+        {"role": "system", "content": "You are Echo AI, a helpful, wise, and intelligent assistant. CRITICAL RULES: 1. Always reply in the EXACT same language that the user uses (Bengali if Bengali, English if English). 2. If an image or screenshot is uploaded, DO NOT generate new images. Only read, analyze, and explain the text or contents simply in the user's language so common people can understand. If you cannot understand, say 'আমি বুঝতে পারিনি'."},
+        {"role": "assistant", "content": "নমস্কার! 🙏 আমি **Echo AI**। আপনার স্ক্রিনশট বা ছবি দিন, আমি সেটি পড়ে বাংলায় বুঝিয়ে দেব এবং সাথে সাথে ভয়েস বেজে উঠবে।"}
     ]
 
 st.markdown("""
     <head>
         <meta name="mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-capable" content="yes">
-        <meta name="application-name" content="স্ক্রিনশট রিডার হাব">
+        <meta name="application-name" content="Echo AI">
         <meta name="theme-color" content="#1a73e8">
     </head>
     <style>
@@ -32,7 +32,16 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown("<h3 style='text-align: center; color: #1a73e8;'>🎙️ স্ক্রিনশট রিডার ও অটো-ভয়েস হাব</h3>", unsafe_allow_html=True)
+# আকর্ষণীয় প্রিমিয়াম হেডার
+st.markdown("<h2 style='text-align: center; color: #1a73e8; margin-bottom: 0px;'>🌐 Echo AI</h2>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #666666; font-size: 14px; margin-top: 2px;'>আপনার স্মার্ট ভয়েস ও স্ক্রিনশট সহকারী</p>", unsafe_allow_html=True)
+
+# আপনার দেওয়া বিজ্ঞাপনের লিংক সহ ব্যানার সেকশন
+st.markdown("""
+    <div style="background: #e8f0fe; border: 1px solid #d2e3fc; padding: 12px; border-radius: 12px; text-align: center; margin-bottom: 15px;">
+        📢 <a href="https://www.profitableratecpmnetwork.com/h7ssyv17p?key=eb8a14de90b0395f65ebf374d7d4ca71" target="_blank" style="color: #1a73e8; font-weight: bold; text-decoration: none; font-size: 15px;">বিশেষ অফার ও আপডেট দেখতে এখানে ক্লিক করুন! 🚀</a>
+    </div>
+""", unsafe_allow_html=True)
 
 # চ্যাট হিস্ট্রি এবং অটো ভয়েস প্লেব্যাক রেন্ডার করা
 for message in st.session_state.messages:
@@ -91,8 +100,8 @@ for message in st.session_state.messages:
                 st.markdown(voice_html, unsafe_allow_html=True)
 
 # ফাইল আপলোড এবং ইনপুট অংশ
-uploaded_file = st.file_uploader("📷 স্ক্রিনশট বা ছবি আপলোড করুন:", type=["jpg", "jpeg", "png"], key="full_version_uploader")
-prompt = st.chat_input("কিছু লিখুন বা প্রশ্ন করুন...")
+uploaded_file = st.file_uploader("📷 স্ক্রিনশট বা ছবি আপলোড করুন:", type=["jpg", "jpeg", "png"], key="echo_ai_uploader")
+prompt = st.chat_input("Echo AI কে কিছু জিগ্যেস করুন...")
 
 if prompt or uploaded_file:
     user_content = []
@@ -117,7 +126,7 @@ if prompt or uploaded_file:
             st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        with st.spinner("বিশ্লেষণ করা হচ্ছে..."):
+        with st.spinner("Echo AI বিশ্লেষণ করছে..."):
             try:
                 model_to_use = "meta-llama/llama-3.2-11b-vision-preview" if uploaded_file is not None else "openai/gpt-oss-20b"
                 
