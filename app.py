@@ -4,27 +4,21 @@ import base64
 
 st.set_page_config(page_title="Echo AI - আপনার ভয়েস ও স্ক্রিনশট সহকারী", page_icon="🌐", layout="centered")
 
-# ব্রাউজারের ভয়েস রিডার (সাউন্ড বাটন) ফাংশন
+# সাউন্ড বাটন ফাংশন (সহজ ও নিরাপদ পদ্ধতি)
 def add_sound_feature(text, unique_id):
+    safe_text = str(text).replace('"', '').replace("'", "").replace('\n', ' ')
     html_code = f"""
-    <div style="margin: 2px 0 10px 0;">
-        <button onclick="playVoice_{unique_id}()" style="background-color: #f0f2f6; border: 1px solid #dcdcdc; border-radius: 6px; padding: 4px 10px; cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; gap: 5px;">
-            🔊 <b>শুনুন</b>
+    <div>
+        <button onclick="
+            var msg = new SpeechSynthesisUtterance('{safe_text}');
+            msg.lang = 'bn-BD';
+            window.speechSynthesis.speak(msg);
+        " style="background: #f0f2f6; border: 1px solid #ccc; padding: 5px 10px; border-radius: 5px; cursor: pointer;">
+            🔊 শুনুন
         </button>
-        <script>
-            function playVoice_{unique_id}() {{
-                if ('speechSynthesis' in window) {{
-                    window.speechSynthesis.cancel();
-                    const utterance = new SpeechSynthesisUtterance(`{text}`);
-                    utterance.lang = 'bn-BD';
-                    utterance.rate = 0.9;
-                    window.speechSynthesis.speak(utterance);
-                }}
-            }}
-        </script>
     </div>
     """
-    st.components.v1.html(html_code, height=35)
+    st.components.v1.html(html_code, height=40)
 
 try:
     client = Groq(api_key=st.secrets["GROQ_API_KEY"])
