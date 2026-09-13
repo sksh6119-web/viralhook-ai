@@ -6,21 +6,23 @@ import os
 
 st.set_page_config(page_title="Echo AI - আপনার ভয়েস ও স্ক্রিনশট সহকারী", page_icon="🌐", layout="centered")
 
-# স্ট্যান্ডার্ড ও পরিষ্কার বাংলা ভয়েস তৈরির ফাংশন (gTTS ব্যবহার করে)
-def add_sound_feature(text, unique_id):
+# সাউন্ড অন/অফ করার গ্লোবাল কন্ট্রোল (Sidebar-এ সুইচ)
+st.sidebar.title("⚙️ সেটিংস")
+sound_enabled = st.sidebar.toggle("🔊 ভয়েস আউটপুট (Sound)", value=True)
+
+# অটোমেটিক ক্লিয়ার এবং স্ট্যান্ডার্ড বাংলা ভয়েস জেনারেট করার ফাংশন
+def play_auto_voice(text, unique_id):
+    if not sound_enabled:
+        return
     try:
-        # পরিষ্কার টেক্সট তৈরি
         clean_text = str(text).replace('"', '').replace("'", "").replace('\n', ' ')
-        
-        # gTTS দিয়ে বাংলা অডিও ফাইল তৈরি করা
-        tts = gTTS(text=clean_text, lang='bn', slow=False)
-        audio_file = f"temp_audio_{unique_id}.mp3"
-        tts.save(audio_file)
-        
-        # Streamlit-এর নিজস্ব ইনবিল্ট অডিও প্লেয়ার (যা দেখতে সুন্দর ও সাবলীল)
-        st.audio(audio_file, format="audio/mp3")
+        if len(clean_text.strip() > 0):
+            tts = gTTS(text=clean_text, lang='bn', slow=False)
+            audio_file = f"voice_{unique_id}.mp3"
+            tts.save(audio_file)
+            st.audio(audio_file, format="audio/mp3", autoplay=True)
     except Exception as e:
-        st.write("🔊 (ভয়েস লোড করতে সমস্যা হয়েছে)")
+        pass
 
 try:
     client = Groq(api_key=st.secrets["GROQ_API_KEY"])
@@ -54,14 +56,14 @@ st.markdown("""
 st.markdown("<h2 style='text-align: center; color: #1a73e8; margin-bottom: 0px;'>🌐 Echo AI</h2>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; color: #666666; font-size: 14px; margin-top: 2px;'>আপনার স্মার্ট ভয়েস ও স্ক্রিনশট সহকারী</p>", unsafe_allow_html=True)
 
-# আপনার প্রমোশন ও বিজ্ঞাপনের ব্যানার লিঙ্ক
+# প্রমোশন ব্যানার
 st.markdown("""
     <div style="background: #e8f0fe; border: 1px solid #d2e3fc; padding: 12px; border-radius: 12px; text-align: center; margin-bottom: 20px;">
         📢 <a href="https://www.profitableratecpmnetwork.com/h7syyv17p?key=ebdal4de90b6395f05ef374d764ca71" target="_blank" style="color: #1a73e8; text-decoration: none; font-weight: bold;">বিশেষ অফার ও আপডেট দেখতে এখানে ক্লিক করুন!</a> 🚀
     </div>
 """, unsafe_allow_html=True)
 
-# চ্যাট হিস্ট্রি রেন্ডার করা (সাউন্ড বাটনসহ)
+# চ্যাট হিস্ট্রি রেন্ডার করা
 for i, message in enumerate(st.session_state.messages):
     if message["role"] != "system":
         with st.chat_message(message["role"]):
@@ -71,14 +73,10 @@ for i, message in enumerate(st.session_state.messages):
                     if part.get("type") == "text":
                         text_val = part.get("text")
                         st.markdown(text_val)
-                        if message["role"] == "assistant":
-                            add_sound_feature(text_val, unique_id=f"hist_txt_{i}")
                     elif part.get("type") == "image_url":
                         st.image(part.get("image_url").get("url"), caption="আপলোড করা স্ক্রিনশট", width=200)
             else:
                 st.markdown(content)
-                if message["role"] == "assistant":
-                    add_sound_feature(content, unique_id=f"hist_msg_{i}")
 
 # ফাইল আপলোড এবং ইনপুট অংশ
 uploaded_file = st.file_uploader("📸 স্ক্রিনশট বা ছবি আপলোড করুন:", type=["jpg", "jpeg", "png"], key="echo_ai_uploader")
@@ -124,10 +122,14 @@ if prompt or uploaded_file:
                     reply = "আমি দুঃখিত, অতিরিক্ত লেখা পড়তে পারিনি বা বুঝতে পারিনি।"
                 
                 st.markdown(reply)
-                add_sound_feature(reply, unique_id="live_reply_new")
+                
+                # অটোমেটিক ভয়েস প্লে এবং সাউন্ড অন/অফ কন্ট্রোল
+                play_auto_voice(reply, unique_id=len(st.session_state.messages))
+                
                 st.session_state.messages.append({"role": "assistant", "content": reply})
                 st.rerun()
             except Exception as e:
                 reply = "আমি বুঝতে পারিনি বা প্রযুক্তিগত সমস্যা হয়েছে।"
                 st.markdown(reply)
-                add_sound_feature(reply, unique_id="live_error_new")
+                play_auto_voice(reply, unique_id="error")
+                st.session_state.messages.append({"role": "assistant", "content": reply})
