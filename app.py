@@ -9,18 +9,24 @@ st.set_page_config(page_title="Echo AI - আপনার ভয়েস ও স
 st.sidebar.title("⚙️ সেটিংস")
 sound_enabled = st.sidebar.toggle("🔊 অটো ভয়েস আউটপুট", value=True)
 
-# ভয়েস আরও ফাস্ট এবং স্পষ্ট করার ফাংশন
+# ভয়েস আরও দ্রুত এবং স্পষ্ট করার ফাংশন
 def play_auto_voice(text, unique_id):
     if not sound_enabled:
         return
     try:
         clean_text = str(text).replace('"', '').replace("'", "").replace('\n', ' ')
         if len(clean_text.strip()) > 0:
-            # slow=False এবং tld='com.bn' বা দ্রুত রিডিংয়ের জন্য সেটআপ
+            # বাংলা ভাষার জন্য গতি বাড়িয়ে ফাস্ট করার ব্যবস্থা
             tts = gTTS(text=clean_text, lang='bn', slow=False)
             audio_file = f"voice_{unique_id}.mp3"
             tts.save(audio_file)
-            st.audio(audio_file, format="audio/mp3")
+            # ব্রাউজারে দ্রুত প্লে করার জন্য গতি কন্ট্রোল ট্যাগসহ অডিও এমবেড করা
+            audio_html = f"""
+                <audio controls autoplay style="width: 100%;">
+                    <source src="data:audio/mp3;base64,{base64.b64encode(open(audio_file, "rb").read()).decode()}" type="audio/mp3">
+                </audio>
+            """
+            st.markdown(audio_html, unsafe_allow_html=True)
     except Exception as e:
         pass
 
