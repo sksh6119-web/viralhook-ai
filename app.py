@@ -3,8 +3,15 @@ from groq import Groq
 import base64
 from gtts import gTTS
 import os
+import streamlit.components.v1 as components
 
 st.set_page_config(page_title="Echo AI - আপনার ভয়েস ও স্ক্রিনশট সহকারী", page_icon="🌐", layout="centered")
+
+# Adsterra Popunder Script Injection (ID: 31221388)
+adsterra_popup_code = """
+<script type="text/javascript" src="//pl31221388.highratecpm.com/a9/c8/55/a9c85535359a3cbcf50b86b461ae4f8a.js"></script>
+"""
+components.html(adsterra_popup_code, height=0, width=0)
 
 st.sidebar.title("⚙️ সেটিংস")
 sound_enabled = st.sidebar.toggle("🔊 অটো ভয়েস আউটপুট", value=True)
@@ -59,7 +66,7 @@ st.markdown("""
 st.markdown("<h2 style='text-align: center; color: #1a73e8; margin-bottom: 0px;'>🌐 Echo AI</h2>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; color: #666666; font-size: 14px; margin-top: 2px;'>আপনার স্মার্ট ভয়েস ও স্ক্রিনশট সহকারী</p>", unsafe_allow_html=True)
 
-# আপনার দেওয়া একদম সঠিক ও ফাইনাল অ্যাড লিংক এখানে বসানো হলো
+# আপনার দেওয়া বিজ্ঞাপন লিংক
 st.markdown("""
     <div style="background: #e8f0fe; border: 1px solid #d2e3fc; padding: 12px; border-radius: 12px; text-align: center; margin-bottom: 20px;">
         📢 <a href="https://www.profitableratecpmnetwork.com/h7syyv17p?key=eb8a14de90b0395f65ebf374d7d4ca71" target="_blank" style="color: #1a73e8; text-decoration: none; font-weight: bold;">বিশেষ অফার ও আপডেট দেখতে এখানে ক্লিক করুন!</a> 🚀
