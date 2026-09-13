@@ -13,7 +13,7 @@ except Exception as e:
 if "messages" not in st.session_state:
     st.session_state.messages = [
         {"role": "system", "content": "You are Echo AI, a helpful, wise, and intelligent assistant. CRITICAL RULES: 1. Always reply in the EXACT same language that the user uses (Bengali if Bengali, English if English). 2. If an image or screenshot is uploaded, DO NOT generate new images. Only read, analyze, and explain the text or contents simply in the user's language so common people can understand. If you cannot understand, say 'আমি বুঝতে পারিনি'."},
-        {"role": "assistant", "content": "নমস্কার! 🙏 আমি **Echo AI**। আপনার স্ক্রিনশট বা ছবি দিন, আমি সেটি পড়ে বাংলায় বুঝিয়ে দেব এবং সাথে সাথে ভয়েস বেজে উঠবে।"}
+        {"role": "assistant", "content": "নমস্কার! 🙏 আমি **Echo AI**। আপনার স্ক্রিনশট বা ছবি দিন, আমি সেটি পড়ে বাংলায় বুঝিয়ে দেব।"}
     ]
 
 st.markdown("""
@@ -32,19 +32,19 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# আকর্ষণীয় প্রিমিয়াম হেডার
+# প্রিমিয়াম হেডার
 st.markdown("<h2 style='text-align: center; color: #1a73e8; margin-bottom: 0px;'>🌐 Echo AI</h2>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; color: #666666; font-size: 14px; margin-top: 2px;'>আপনার স্মার্ট ভয়েস ও স্ক্রিনশট সহকারী</p>", unsafe_allow_html=True)
 
-# আপনার দেওয়া বিজ্ঞাপনের লিংক সহ ব্যানার সেকশন
+# বিজ্ঞাপন ব্যানার
 st.markdown("""
     <div style="background: #e8f0fe; border: 1px solid #d2e3fc; padding: 12px; border-radius: 12px; text-align: center; margin-bottom: 15px;">
         📢 <a href="https://www.profitableratecpmnetwork.com/h7ssyv17p?key=eb8a14de90b0395f65ebf374d7d4ca71" target="_blank" style="color: #1a73e8; font-weight: bold; text-decoration: none; font-size: 15px;">বিশেষ অফার ও আপডেট দেখতে এখানে ক্লিক করুন! 🚀</a>
     </div>
 """, unsafe_allow_html=True)
 
-# চ্যাট হিস্ট্রি এবং অটো ভয়েস প্লেব্যাক রেন্ডার করা
-for message in st.session_state.messages:
+# চ্যাট হিস্ট্রি রেন্ডার করা
+for i, message in enumerate(st.session_state.messages):
     if message["role"] != "system":
         with st.chat_message(message["role"]):
             content = message["content"]
@@ -57,47 +57,35 @@ for message in st.session_state.messages:
             else:
                 st.markdown(content)
             
-            # অ্যাসিস্ট্যান্টের মেসেজের জন্য ভয়েস ও স্টপ কন্ট্রোল
+            # অ্যাসিস্ট্যান্টের মেসেজের পাশে আলাদা এবং নিখুঁত ভয়েস প্লে ও স্টপ বাটন
             if message["role"] == "assistant":
                 text_to_speak = content if isinstance(content, str) else "বিশ্লেষণ সম্পন্ন হয়েছে।"
                 clean_text = text_to_speak.replace('"', '').replace("'", "").replace('\n', ' ')
                 
-                voice_html = """
-                <div style="margin-top: 10px; display: flex; gap: 8px; align-items: center;">
-                    <button onclick="
-                        if ('speechSynthesis' in window) {
-                            window.speechSynthesis.cancel();
-                            var u = new SpeechSynthesisUtterance('""" + clean_text + """');
-                            u.rate = 0.9;
-                            u.lang = 'bn-IN';
-                            window.speechSynthesis.speak(u);
-                        }
-                    " style="background: #e8f0fe; color: #1a73e8; border: 1px solid #d2e3fc; padding: 6px 14px; border-radius: 15px; font-weight: bold; cursor: pointer; font-size: 13px;">
-                        🔊 ভয়েস শুনুন
-                    </button>
-                    <button onclick="
-                        if ('speechSynthesis' in window) {
-                            window.speechSynthesis.cancel();
-                        }
-                    " style="background: #fce8e6; color: #c5221f; border: 1px solid #fadcda; padding: 6px 12px; border-radius: 15px; font-weight: bold; cursor: pointer; font-size: 13px;">
-                        ⏹️ বন্ধ করুন
-                    </button>
-                </div>
-                <script>
-                (function() {
-                    if ('speechSynthesis' in window) {
-                        window.speechSynthesis.cancel();
-                        var u = new SpeechSynthesisUtterance('""" + clean_text + """');
-                        u.rate = 0.9;
-                        u.lang = 'bn-IN';
-                        setTimeout(function() {
-                            window.speechSynthesis.speak(u);
-                        }, 400);
-                    }
-                })();
-                </script>
-                """
-                st.markdown(voice_html, unsafe_allow_html=True)
+                # Streamlit এর কলাম ব্যবহার করে বাটনগুলো একদম পরিপাটি ও আলাদা রাখা হয়েছে যাতে কোনো ওভারল্যাপ না হয়
+                col1, col2, col3 = st.columns([1, 1, 3])
+                with col1:
+                    if st.button("▶️ প্লে", key=f"play_{i}"):
+                        st.markdown(f"""
+                            <script>
+                            if ('speechSynthesis' in window) {{
+                                window.speechSynthesis.cancel();
+                                var u = new SpeechSynthesisUtterance('{clean_text}');
+                                u.rate = 0.9;
+                                u.lang = 'bn-IN';
+                                window.speechSynthesis.speak(u);
+                            }}
+                            </script>
+                        """, unsafe_allow_html=True)
+                with col2:
+                    if st.button("⏹️ স্টপ", key=f"stop_{i}"):
+                        st.markdown("""
+                            <script>
+                            if ('speechSynthesis' in window) {
+                                window.speechSynthesis.cancel();
+                            }
+                            </script>
+                        """, unsafe_allow_html=True)
 
 # ফাইল আপলোড এবং ইনপুট অংশ
 uploaded_file = st.file_uploader("📷 স্ক্রিনশট বা ছবি আপলোড করুন:", type=["jpg", "jpeg", "png"], key="echo_ai_uploader")
